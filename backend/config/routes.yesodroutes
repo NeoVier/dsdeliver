@@ -8,3 +8,4 @@
 
 /products ProductsR GET
 /orders OrdersR GET POST
+/orders/#OrderId/delivered DeliveredR PUT

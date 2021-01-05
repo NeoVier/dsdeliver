@@ -36,6 +36,7 @@ import Database.Persist.Postgresql
 import Handler.Common
 import Handler.Products
 import Handler.Orders
+import Handler.Delivered
 import Import
 import Language.Haskell.TH.Syntax (qLocation)
 import Network.HTTP.Client.TLS (getGlobalManager)
