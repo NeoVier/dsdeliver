@@ -20,3 +20,6 @@ cabal.sandbox.config
 *~
 \#*
 backend.cabal
+
+.idea
+backend.iml
