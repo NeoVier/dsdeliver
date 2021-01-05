@@ -1,19 +1,19 @@
 -- By default this file is used by `persistFileWith` in Model.hs (which is imported by Foundation.hs)
 -- Syntax for this file here: https://github.com/yesodweb/persistent/blob/master/docs/Persistent-entity-syntax.md
 
-Product
+Product json
     name String
     price Double
     description String
     imageUri String
 
-Order
+Order json
     address String
     latitude Double
     longitude Double
-    moment UTCTime
+    moment UTCTime default=CURRENT_TIMESTAMP
     status OrderStatus
 
-OrderProduct
+OrderProduct json
     productId ProductId
     orderId OrderId
