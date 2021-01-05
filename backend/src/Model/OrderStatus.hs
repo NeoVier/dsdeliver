@@ -1,7 +1,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE TemplateHaskell #-}
 
-module OrderStatus where
+module Model.OrderStatus where
 
 import ClassyPrelude.Yesod
 
@@ -12,11 +12,10 @@ data OrderStatus
 
 instance FromJSON OrderStatus where
   parseJSON (String x)
-   | x == "Pending" = return Pending
-   | x == "Delivered" = return Delivered
-   | otherwise = fail "Invalid order status"
+    | x == "Pending" = return Pending
+    | x == "Delivered" = return Delivered
+    | otherwise = fail "Invalid order status"
   parseJSON _ = fail "Invalid order status"
-
 
 instance ToJSON OrderStatus where
   toJSON Pending = toJSON ("Pending" :: Text)
