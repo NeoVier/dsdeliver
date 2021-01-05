@@ -35,6 +35,7 @@ import Database.Persist.Postgresql
 -- Don't forget to add new modules to your cabal file!
 import Handler.Common
 import Handler.Home
+import Handler.Products
 import Import
 import Language.Haskell.TH.Syntax (qLocation)
 import Network.HTTP.Client.TLS (getGlobalManager)

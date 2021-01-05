@@ -7,18 +7,14 @@
 module Handler.Home where
 
 import Import
+import OrderStatus
 
--- This is a handler function for the GET request method on the HomeR
--- resource pattern. All of your resource patterns are defined in
--- config/routes.yesodroutes
---
--- The majority of the code you will write in Yesod lives in these handler
--- functions. You can spread them across multiple files if you are so
--- inclined, or create a single monolithic file.
 getHomeR :: Handler TypedContent
-getHomeR =
-  selectRep $
-    provideJson $ object ["name" .= ("testName" :: Text), "age" .= ("testAge" :: Text)]
+getHomeR = do
+  date <- liftIO getCurrentTime
+  selectRep $ provideJson $ Order "orderAddress" 0 0 date Pending
+--    provideJson $ Product "productName" 0.23 "productDescription" "imageUri"
+-- provideJson $ object ["name" .= ("testName" :: Text), "age" .= ("testAge" :: Text)]
 
 postHomeR :: Handler Html
 postHomeR = error "not implemented"
