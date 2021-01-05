@@ -8,7 +8,7 @@ import ClassyPrelude.Yesod
 data OrderStatus
   = Pending
   | Delivered
-  deriving (Eq, Show, Read, Ord)
+  deriving (Eq, Show, Read, Ord, Enum)
 
 instance FromJSON OrderStatus where
   parseJSON (String x)

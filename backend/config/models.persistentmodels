@@ -6,6 +6,7 @@ Product json
     price Double
     description String
     imageUri String
+    deriving Show
 
 Order json
     address String
@@ -13,7 +14,9 @@ Order json
     longitude Double
     moment UTCTime default=CURRENT_TIMESTAMP
     status OrderStatus
+    deriving Show
 
 OrderProduct json
     productId ProductId
     orderId OrderId
+    deriving Show

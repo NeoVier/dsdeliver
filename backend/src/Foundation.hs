@@ -13,11 +13,8 @@ module Foundation where
 import Control.Monad.Logger (LogSource)
 -- Used only when in "auth-dummy-login" setting is enabled.
 
-import qualified Data.CaseInsensitive as CI
-import qualified Data.Text.Encoding as TE
 import Database.Persist.Sql (ConnectionPool, runSqlPool)
 import Import.NoFoundation
-import Text.Hamlet (hamletFile)
 import Text.Jasmine (minifym)
 import Yesod.Core.Types (Logger)
 import qualified Yesod.Core.Unsafe as Unsafe
@@ -90,23 +87,6 @@ instance Yesod App where
   yesodMiddleware :: ToTypedContent res => Handler res -> Handler res
   yesodMiddleware = defaultYesodMiddleware
 
-  defaultLayout :: Widget -> Handler Html
-  defaultLayout widget = do
-    master <- getYesod
-    mmsg <- getMessage
-
-    mcurrentRoute <- getCurrentRoute
-
-    -- We break up the default layout into two components:
-    -- default-layout is the contents of the body tag, and
-    -- default-layout-wrapper is the entire page. Since the final
-    -- value passed to hamletToRepHtml cannot be a widget, this allows
-    -- you to use normal widget features in default-layout.
-
-    pc <- widgetToPageContent $ do
-      addStylesheet $ StaticR css_bootstrap_css
-      $(widgetFile "default-layout")
-    withUrlRenderer $(hamletFile "templates/default-layout-wrapper.hamlet")
 
   -- This function creates static content files in the static folder
   -- and names them based on a hash of their content. This allows
