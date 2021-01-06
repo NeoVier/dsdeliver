@@ -8,6 +8,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
+import Route
 
 
 
@@ -32,14 +33,15 @@ view deviceClass =
                 [ Element.el [] <| Element.text "Escolha o seu pedido e em poucos minutos"
                 , Element.el [] <| Element.text "levaremos na sua porta"
                 ]
-            , Element.link
+            , Route.linkToRoute
                 [ Font.color Colors.light
                 , Font.bold
                 , Background.color Colors.primary
                 , Element.paddingXY 30 25
                 , Border.rounded 10
+                , Element.mouseOver [ Background.color Colors.primaryHover ]
                 ]
-                { url = "/order", label = Element.text "FAZER PEDIDO" }
+                { route = Route.Products, label = Element.text "FAZER PEDIDO" }
             ]
         , if Dimmensions.isSmall deviceClass then
             Element.none

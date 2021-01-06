@@ -2,6 +2,7 @@ module Main exposing (..)
 
 import Browser
 import Browser.Events
+import Browser.Navigation as Nav
 import Colors
 import Component.Footer as Footer
 import Component.Navbar as Navbar
@@ -12,25 +13,26 @@ import Element.Font as Font
 import Element.Region as Region
 import Html exposing (Html)
 import Page.Home as Home
-import Page.Order as Order
+import Page.NotFound as NotFound
+import Page.Products as Products
+import Route exposing (Route)
+import Url
 
 
 
 -- MODEL
 
 
-type Route
-    = Home
-    | Order
-
-
 type alias Model =
-    { currRoute : Route, device : Element.DeviceClass }
+    { currRoute : Maybe Route
+    , navKey : Nav.Key
+    , device : Element.DeviceClass
+    }
 
 
-init : Dimmensions -> ( Model, Cmd Msg )
-init dimmensions =
-    ( { currRoute = Home, device = Dimmensions.deviceClass dimmensions }, Cmd.none )
+init : Dimmensions -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init dimmensions url key =
+    ( { currRoute = Route.fromUrl url, navKey = key, device = Dimmensions.deviceClass dimmensions }, Cmd.none )
 
 
 
@@ -39,6 +41,8 @@ init dimmensions =
 
 type Msg
     = Resized Dimmensions
+    | ChangedUrl Url.Url
+    | RequestedUrl Browser.UrlRequest
 
 
 
@@ -47,11 +51,13 @@ type Msg
 
 main : Program Dimmensions Model Msg
 main =
-    Browser.element
+    Browser.application
         { init = init
         , view = view
         , update = update
         , subscriptions = subscriptions
+        , onUrlChange = ChangedUrl
+        , onUrlRequest = RequestedUrl
         }
 
 
@@ -59,23 +65,30 @@ main =
 -- VIEW
 
 
-view : Model -> Html Msg
+view : Model -> Browser.Document Msg
 view model =
-    Element.layout
-        [ Font.family [ Font.typeface "Open Sans", Font.sansSerif ]
-        , Font.color Colors.dark
-        ]
-    <|
-        Element.column [ Element.width Element.fill, Element.height Element.fill ]
-            [ Navbar.view
-            , case model.currRoute of
-                Home ->
-                    Home.view model.device
-
-                Order ->
-                    Order.view
-            , Footer.view
+    { title = "DS Deliver"
+    , body =
+        [ Element.layout
+            [ Font.family [ Font.typeface "Open Sans", Font.sansSerif ]
+            , Font.color Colors.dark
             ]
+          <|
+            Element.column [ Element.width Element.fill, Element.height Element.fill ]
+                [ Navbar.view
+                , case model.currRoute of
+                    Just Route.Home ->
+                        Home.view model.device
+
+                    Just Route.Products ->
+                        Products.view
+
+                    Nothing ->
+                        NotFound.view
+                , Footer.view
+                ]
+        ]
+    }
 
 
 
@@ -85,8 +98,24 @@ view model =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
+        ChangedUrl url ->
+            changeRouteTo (Route.fromUrl url) model
+
+        RequestedUrl request ->
+            case request of
+                Browser.Internal url ->
+                    ( model, Nav.pushUrl model.navKey (Url.toString url) )
+
+                Browser.External href ->
+                    ( model, Nav.load href )
+
         Resized dimmensions ->
             ( { model | device = Dimmensions.deviceClass dimmensions }, Cmd.none )
+
+
+changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
+changeRouteTo maybeRoute model =
+    ( { model | currRoute = maybeRoute }, Cmd.none )
 
 
 

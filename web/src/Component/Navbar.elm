@@ -5,6 +5,7 @@ import Element exposing (Element)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Region as Region
+import Route
 
 
 
@@ -23,10 +24,10 @@ view =
         ]
         [ Element.image [ Element.centerY ]
             { src = "/assets/logo.svg", description = "" }
-        , Element.link
+        , Route.linkToRoute
             [ Font.bold
             , Font.color <| Element.rgb 1 1 1
             , Font.size 24
             ]
-            { url = "/", label = Element.text "DS Deliver" }
+            { route = Route.Home, label = Element.text "DS Deliver" }
         ]

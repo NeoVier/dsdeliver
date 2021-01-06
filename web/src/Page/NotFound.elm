@@ -1,4 +1,4 @@
-module Page.Order exposing (..)
+module Page.NotFound exposing (view)
 
 import Element exposing (Element)
 
@@ -9,4 +9,4 @@ import Element exposing (Element)
 
 view : Element msg
 view =
-    Element.text "order"
+    Element.text "Page not found"
