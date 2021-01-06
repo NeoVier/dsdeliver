@@ -1,23 +1,70 @@
-module Page.Products exposing (..)
+module Page.Products exposing (Model, Msg, init, update, view)
 
+import Api
 import Colors
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
+import Http
 import Model.Product as Product exposing (Product)
+
+
+
+-- MODEL
+
+
+type Model
+    = Loading
+    | WithData { products : List Product }
+    | WithError
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( Loading, Api.fetchProducts GotProducts )
+
+
+
+-- UPDATE
+
+
+type Msg
+    = GotProducts (Result Http.Error (List Product))
+
+
+update : Model -> Msg -> ( Model, Cmd Msg )
+update model msg =
+    case msg of
+        GotProducts (Ok products) ->
+            ( WithData { products = products }, Cmd.none )
+
+        GotProducts (Err err) ->
+            let
+                err2 =
+                    Debug.log "err" err
+            in
+            ( WithError, Cmd.none )
 
 
 
 -- VIEW
 
 
-view : Element msg
-view =
+view : Model -> Element msg
+view model =
     Element.column [ Element.width Element.fill, Element.height Element.fill ]
         [ viewHeader
-        , viewProductList <| List.repeat 6 Product.exampleProduct
+        , case model of
+            Loading ->
+                Element.el [] <| Element.text "Loading"
+
+            WithError ->
+                Element.el [] <| Element.text "Something went wrong"
+
+            WithData { products } ->
+                viewProductList products
         ]
 
 

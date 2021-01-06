@@ -12,9 +12,9 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Region as Region
 import Html exposing (Html)
-import Page.Home as Home
-import Page.NotFound as NotFound
-import Page.Products as Products
+import Page.Home as PHome
+import Page.NotFound as PNotFound
+import Page.Products as PProducts
 import Route exposing (Route)
 import Url
 
@@ -23,8 +23,14 @@ import Url
 -- MODEL
 
 
+type Page
+    = Home
+    | Products PProducts.Model
+    | NotFound
+
+
 type alias Model =
-    { currRoute : Maybe Route
+    { currPage : Page
     , navKey : Nav.Key
     , device : Element.DeviceClass
     }
@@ -32,7 +38,24 @@ type alias Model =
 
 init : Dimmensions -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
 init dimmensions url key =
-    ( { currRoute = Route.fromUrl url, navKey = key, device = Dimmensions.deviceClass dimmensions }, Cmd.none )
+    case Route.fromUrl url of
+        Just Route.Products ->
+            let
+                ( initialModel, cmd ) =
+                    PProducts.init
+            in
+            ( { currPage = Products initialModel
+              , navKey = key
+              , device = Dimmensions.deviceClass dimmensions
+              }
+            , Cmd.map GotProductsMsg cmd
+            )
+
+        Just Route.Home ->
+            ( { currPage = Home, navKey = key, device = Dimmensions.deviceClass dimmensions }, Cmd.none )
+
+        Nothing ->
+            ( { currPage = NotFound, navKey = key, device = Dimmensions.deviceClass dimmensions }, Cmd.none )
 
 
 
@@ -43,6 +66,7 @@ type Msg
     = Resized Dimmensions
     | ChangedUrl Url.Url
     | RequestedUrl Browser.UrlRequest
+    | GotProductsMsg PProducts.Msg
 
 
 
@@ -76,15 +100,15 @@ view model =
           <|
             Element.column [ Element.width Element.fill, Element.height Element.fill ]
                 [ Navbar.view
-                , case model.currRoute of
-                    Just Route.Home ->
-                        Home.view model.device
+                , case model.currPage of
+                    Home ->
+                        PHome.view model.device
 
-                    Just Route.Products ->
-                        Products.view
+                    Products productsModel ->
+                        PProducts.view productsModel
 
-                    Nothing ->
-                        NotFound.view
+                    NotFound ->
+                        PNotFound.view
                 , Footer.view
                 ]
         ]
@@ -97,11 +121,11 @@ view model =
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    case msg of
-        ChangedUrl url ->
+    case ( msg, model.currPage ) of
+        ( ChangedUrl url, _ ) ->
             changeRouteTo (Route.fromUrl url) model
 
-        RequestedUrl request ->
+        ( RequestedUrl request, _ ) ->
             case request of
                 Browser.Internal url ->
                     ( model, Nav.pushUrl model.navKey (Url.toString url) )
@@ -109,13 +133,36 @@ update msg model =
                 Browser.External href ->
                     ( model, Nav.load href )
 
-        Resized dimmensions ->
+        ( Resized dimmensions, _ ) ->
             ( { model | device = Dimmensions.deviceClass dimmensions }, Cmd.none )
+
+        ( GotProductsMsg productsMsg, Products productsModel ) ->
+            let
+                ( updatedModel, cmd ) =
+                    PProducts.update productsModel productsMsg
+            in
+            ( { model | currPage = Products updatedModel }, Cmd.map GotProductsMsg cmd )
+
+        -- Invalid messages
+        ( GotProductsMsg _, _ ) ->
+            ( model, Cmd.none )
 
 
 changeRouteTo : Maybe Route -> Model -> ( Model, Cmd Msg )
 changeRouteTo maybeRoute model =
-    ( { model | currRoute = maybeRoute }, Cmd.none )
+    case maybeRoute of
+        Nothing ->
+            ( { model | currPage = NotFound }, Cmd.none )
+
+        Just Route.Products ->
+            let
+                ( initialModel, cmd ) =
+                    PProducts.init
+            in
+            ( { model | currPage = Products initialModel }, Cmd.map GotProductsMsg cmd )
+
+        Just Route.Home ->
+            ( { model | currPage = Home }, Cmd.none )
 
 
 
