@@ -7,6 +7,7 @@ import Element.Background as Background
 import Element.Border as Border
 import Element.Font as Font
 import Element.Region as Region
+import Html.Attributes as Attr
 import Http
 import Model.Product as Product exposing (Product)
 
@@ -38,12 +39,12 @@ update : Model -> Msg -> ( Model, Cmd Msg )
 update model msg =
     case msg of
         GotProducts (Ok products) ->
-            ( WithData { products = products }, Cmd.none )
+            ( WithData { products = Product.exampleProduct2 :: products }, Cmd.none )
 
         GotProducts (Err err) ->
             -- TODO - Fix Backend
             -- ( WithError, Cmd.none )
-            ( WithData { products = List.repeat 10 Product.exampleProduct }, Cmd.none )
+            ( WithData { products = Product.exampleProduct2 :: List.repeat 10 Product.exampleProduct }, Cmd.none )
 
 
 
@@ -56,10 +57,10 @@ view model =
         [ viewHeader
         , case model of
             Loading ->
-                Element.el [] <| Element.text "Loading"
+                Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Loading"
 
             WithError ->
-                Element.el [] <| Element.text "Something went wrong"
+                Element.el [ Element.centerX ] <| Element.text "Something went wrong"
 
             WithData { products } ->
                 viewProductList products
@@ -119,6 +120,9 @@ viewProductCard product =
         , Border.shadow { offset = ( 0, 4 ), size = 0, blur = 20, color = Element.rgba 0 0 0 0.25 }
         , Font.color Colors.secondary
         , Element.mouseOver [ Element.scale 1.01 ]
+        , Element.width <| Element.maximum 300 Element.fill
+        , Element.height Element.fill
+        , Element.htmlAttribute <| Attr.class "product-card"
         ]
         [ Element.el
             [ Font.center
@@ -133,8 +137,8 @@ viewProductCard product =
         , Element.el [ Font.bold, Font.color Colors.primary, Font.size 24 ] <|
             Element.text ("R$ " ++ Product.formatPrice product.price)
         , Element.el [ Element.width Element.fill, Element.height <| Element.px 2, Background.color <| Element.rgb255 0xE6 0xE6 0xE6 ] Element.none
-        , Element.column [ Element.spacing 30 ]
+        , Element.column [ Element.spacing 30, Element.height Element.fill ]
             [ Element.el [ Font.bold, Font.size 16 ] <| Element.text "Descrição"
-            , Element.el [ Font.size 14 ] <| Element.text product.description
+            , Element.paragraph [ Font.size 14 ] [ Element.text product.description ]
             ]
         ]

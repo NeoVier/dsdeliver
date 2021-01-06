@@ -1,4 +1,4 @@
-module Model.Product exposing (Product, exampleProduct, formatPrice)
+module Model.Product exposing (Product, exampleProduct, exampleProduct2, formatPrice)
 
 -- TYPE
 
@@ -65,6 +65,16 @@ exampleProduct : Product
 exampleProduct =
     { name = "Pizza Bacon"
     , description = "Pizza bacon"
+    , price = 29.9
+    , imageUri = "https://raw.githubusercontent.com/devsuperior/sds2/master/assets/pizza_bacon.jpg"
+    , id = 1
+    }
+
+
+exampleProduct2 : Product
+exampleProduct2 =
+    { name = "Pizza sem Bacon"
+    , description = "Pizza sem bacon. Essa é uma descrição mais longa para testar o aplicativo"
     , price = 29.9
     , imageUri = "https://raw.githubusercontent.com/devsuperior/sds2/master/assets/pizza_bacon.jpg"
     , id = 1
