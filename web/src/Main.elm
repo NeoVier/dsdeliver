@@ -1,24 +1,35 @@
 module Main exposing (..)
 
 import Browser
+import Browser.Events
+import Colors
+import Component.Navbar as Navbar
+import Dimmensions exposing (Dimmensions)
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Font as Font
 import Element.Region as Region
 import Html exposing (Html)
+import Page.Home as Home
+import Page.Order as Order
 
 
 
 -- MODEL
 
 
+type Route
+    = Home
+    | Order
+
+
 type alias Model =
-    {}
+    { currRoute : Route, device : Element.DeviceClass }
 
 
-init : () -> ( Model, Cmd Msg )
-init _ =
-    ( {}, Cmd.none )
+init : Dimmensions -> ( Model, Cmd Msg )
+init dimmensions =
+    ( { currRoute = Home, device = Dimmensions.deviceClass dimmensions }, Cmd.none )
 
 
 
@@ -26,14 +37,14 @@ init _ =
 
 
 type Msg
-    = NoOp
+    = Resized Dimmensions
 
 
 
 -- MAIN
 
 
-main : Program () Model Msg
+main : Program Dimmensions Model Msg
 main =
     Browser.element
         { init = init
@@ -49,56 +60,20 @@ main =
 
 view : Model -> Html Msg
 view model =
-    Element.layout [ Font.family [ Font.typeface "Open Sans", Font.sansSerif ] ] <|
+    Element.layout
+        [ Font.family [ Font.typeface "Open Sans", Font.sansSerif ]
+        , Font.color Colors.dark
+        ]
+    <|
         Element.column [ Element.width Element.fill, Element.height Element.fill ]
-            [ viewNavbar
+            [ Navbar.view
+            , case model.currRoute of
+                Home ->
+                    Home.view model.device
+
+                Order ->
+                    Order.view
             ]
-
-
-primaryColor : Element.Color
-primaryColor =
-    Element.rgb255 0xDA 0x5C 0x5C
-
-
-primaryHoverColor : Element.Color
-primaryHoverColor =
-    Element.rgb255 0xA7 0x4B 0x4B
-
-
-darkColor : Element.Color
-darkColor =
-    Element.rgb255 0x26 0x32 0x38
-
-
-secondaryColor : Element.Color
-secondaryColor =
-    Element.rgb255 0x9E 0x9E 0x9E
-
-
-lightColor : Element.Color
-lightColor =
-    Element.rgb255 0xF5 0xF5 0xF5
-
-
-viewNavbar : Element msg
-viewNavbar =
-    Element.row
-        [ Region.navigation
-        , Background.color primaryColor
-        , Element.height <| Element.px 70
-        , Element.width Element.fill
-        , Element.paddingXY 45 0
-        , Element.spacing 15
-        ]
-        [ Element.image [ Element.centerY ]
-            { src = "/assets/logo.svg", description = "" }
-        , Element.link
-            [ Font.bold
-            , Font.color <| Element.rgb 1 1 1
-            , Font.size 24
-            ]
-            { url = "/", label = Element.text "DS Deliver" }
-        ]
 
 
 
@@ -108,8 +83,8 @@ viewNavbar =
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
     case msg of
-        NoOp ->
-            ( model, Cmd.none )
+        Resized dimmensions ->
+            ( { model | device = Dimmensions.deviceClass dimmensions }, Cmd.none )
 
 
 
@@ -118,4 +93,4 @@ update msg model =
 
 subscriptions : Model -> Sub Msg
 subscriptions model =
-    Sub.none
+    Browser.Events.onResize (\w h -> Resized { width = w, height = h })
