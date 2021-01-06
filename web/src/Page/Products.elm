@@ -72,7 +72,7 @@ viewHeader =
         numberStyles =
             [ Font.color Colors.primary, Font.bold, Font.size 24, Element.paddingXY 15 0 ]
     in
-    Element.row [ Element.paddingXY 100 20, Element.spacing 100, Element.alignRight ]
+    Element.row [ Element.paddingXY 100 20, Element.spacing 100, Element.centerX ]
         [ Element.column [ Font.bold, Font.size 36, Font.color Colors.primary ]
             [ Element.el [] <| Element.text "SIGA AS"
             , Element.el [] <| Element.text "ETAPAS"

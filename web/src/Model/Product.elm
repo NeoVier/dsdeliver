@@ -8,6 +8,7 @@ type alias Product =
     , description : String
     , price : Float
     , imageUri : String
+    , id : Int
     }
 
 
@@ -66,4 +67,5 @@ exampleProduct =
     , description = "Pizza bacon"
     , price = 29.9
     , imageUri = "https://raw.githubusercontent.com/devsuperior/sds2/master/assets/pizza_bacon.jpg"
+    , id = 1
     }

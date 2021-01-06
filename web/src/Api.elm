@@ -48,8 +48,9 @@ apiUrl =
 
 productDecoder : Decoder Product
 productDecoder =
-    Decode.map4 Product
+    Decode.map5 Product
         (Decode.field "name" Decode.string)
         (Decode.field "description" Decode.string)
         (Decode.field "price" Decode.float)
         (Decode.field "imageUri" Decode.string)
+        (Decode.field "id" Decode.int)

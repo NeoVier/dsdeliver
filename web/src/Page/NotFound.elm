@@ -9,4 +9,4 @@ import Element exposing (Element)
 
 view : Element msg
 view =
-    Element.text "Page not found"
+    Element.el [ Element.height Element.fill, Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Page not found :("
