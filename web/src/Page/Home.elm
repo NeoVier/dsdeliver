@@ -20,6 +20,7 @@ view deviceClass =
         [ Element.width Element.fill
         , Element.height Element.fill
         , Element.centerX
+        , Region.mainContent
         ]
         [ Element.column [ Element.centerX, Element.spacing 45 ]
             [ Element.textColumn [ Font.bold, Region.heading 1, Font.size 55 ]

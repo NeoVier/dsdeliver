@@ -3,6 +3,7 @@ module Main exposing (..)
 import Browser
 import Browser.Events
 import Colors
+import Component.Footer as Footer
 import Component.Navbar as Navbar
 import Dimmensions exposing (Dimmensions)
 import Element exposing (Element)
@@ -73,6 +74,7 @@ view model =
 
                 Order ->
                     Order.view
+            , Footer.view
             ]
 
 
