@@ -41,11 +41,9 @@ update model msg =
             ( WithData { products = products }, Cmd.none )
 
         GotProducts (Err err) ->
-            let
-                err2 =
-                    Debug.log "err" err
-            in
-            ( WithError, Cmd.none )
+            -- TODO - Fix Backend
+            -- ( WithError, Cmd.none )
+            ( WithData { products = List.repeat 10 Product.exampleProduct }, Cmd.none )
 
 
 
