@@ -4,17 +4,16 @@
 module Handler.Orders where
 
 import Data.Aeson
-import System.IO.Unsafe
+import Data.Aeson.Types (Parser)
 import qualified Data.HashMap.Strict as HM
 import Data.Time
+import qualified Data.Vector as V
+import Database.Persist.Sql (toSqlKey)
 import Import
 import Model.OrderStatus
-import qualified Data.Vector as V
-import Data.Aeson.Types (Parser)
-import Database.Persist.Sql (toSqlKey)
+import System.IO.Unsafe
 
 data PostOrder = PostOrder Order [ProductId]
-
   deriving (Show)
 
 instance FromJSON PostOrder where
@@ -36,7 +35,7 @@ parseProductIdArray = withArray "ProductIds" $ \arr ->
 parseProductId :: Value -> Parser ProductId
 parseProductId = withObject "ProductId" $ \obj -> do
   productId <- obj .: "id"
-  return $ (toSqlKey productId :: ProductId)
+  return (toSqlKey productId :: ProductId)
 
 getOrdersR :: Handler TypedContent
 getOrdersR = do
@@ -74,7 +73,7 @@ postOrdersR :: Handler Value
 postOrdersR = do
   (PostOrder order productIds) <- requireCheckJsonBody :: Handler PostOrder
   insertedOrder <- runDB $ insert order
-  let relationships = map (\productId -> OrderProduct productId insertedOrder) productIds
+  let relationships = map (`OrderProduct` insertedOrder) productIds
   _ <- runDB $ insertMany relationships
   let finalObject = object ["orderId" .= insertedOrder, "productIds" .= productIds]
   sendResponseStatus status201 (toJSON finalObject)
