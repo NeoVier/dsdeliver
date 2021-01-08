@@ -44,7 +44,11 @@ let errorHandler (ex: Exception) (logger: ILogger) =
 
 let configureCors (builder: CorsPolicyBuilder) =
     builder
-        .WithOrigins("http://localhost:5000", "https://localhost:5001")
+        .WithOrigins("http://localhost:5000",
+                     "https://localhost:5001",
+                     match System.Environment.GetEnvironmentVariable "WebCORS" with
+                     | null -> "http://localhost:1234"
+                     | valid -> valid)
         .AllowAnyMethod()
         .AllowAnyHeader()
     |> ignore

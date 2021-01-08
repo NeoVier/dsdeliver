@@ -43,7 +43,7 @@ endPointParts endpoint =
 
 apiUrl : String
 apiUrl =
-    "http://localhost:3000"
+    "https://localhost:5001"
 
 
 productDecoder : Decoder Product

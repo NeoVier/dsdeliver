@@ -42,12 +42,11 @@ update model msg =
             ( WithData { products = Product.exampleProduct2 :: products }, Cmd.none )
 
         GotProducts (Err err) ->
-            -- TODO - Fix Backend
-            -- ( WithError, Cmd.none )
-            ( WithData { products = Product.exampleProduct2 :: List.repeat 10 Product.exampleProduct }, Cmd.none )
+            ( WithError, Cmd.none )
 
 
 
+-- ( WithData { products = Product.exampleProduct2 :: List.repeat 10 Product.exampleProduct }, Cmd.none )
 -- VIEW
 
 
