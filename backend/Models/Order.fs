@@ -13,3 +13,9 @@ type Order =
       Status: OrderStatus
       Moment: System.DateTime
       Products: Product [] }
+
+type PostedOrder =
+    { Address: string
+      Latitude: double
+      Longitude: double
+      ProductIds: int64 [] }

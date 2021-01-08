@@ -10,6 +10,7 @@ open Microsoft.Extensions.DependencyInjection
 open Giraffe
 open Backend.HttpHandlers
 
+
 // ---------------------------------
 // Web app
 // ---------------------------------
@@ -20,6 +21,8 @@ let webApp =
              GET
              >=> choose [ route "/products" >=> handleGetProducts
                           route "/orders" >=> handleGetOrders ]
+             POST
+             >=> choose [ route "/orders" >=> handlePostOrders ]
              setStatusCode 404 >=> text "Not Found" ]
 
 // ---------------------------------

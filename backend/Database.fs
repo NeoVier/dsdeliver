@@ -20,4 +20,6 @@ type private Sql = SqlDataProvider<DbProvider, ConnectionString>
 type ProductEntity = Sql.dataContext.``public.productEntity``
 type OrderEntity = Sql.dataContext.``public.orderEntity``
 
+type Context = Sql.dataContext
+
 let context = Sql.GetDataContext()

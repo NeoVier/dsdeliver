@@ -9,9 +9,11 @@ let internal productFromEntity (productEntity: ProductEntity): Product =
       Price = productEntity.Price
       Id = productEntity.Id }
 
-let allProducts: Product [] =
+let allProducts (ctx: Context): Product [] =
+    printfn $"Fetching all products"
+
     query {
-        for product in context.Public.Product do
+        for product in ctx.Public.Product do
             sortBy (product.Name)
             select (product)
     }

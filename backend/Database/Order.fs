@@ -9,6 +9,12 @@ let private statusFromString (status: string): OrderStatus =
     | "Delivered" -> Delivered
     | _ -> Unknown
 
+let private statusToString (status: OrderStatus): string =
+    match status with
+    | Pending -> "Pending"
+    | Delivered -> "Delivered"
+    | Unknown -> "Unknown"
+
 let internal orderFromEntity (orderEntity: OrderEntity) (products: Product []): Order =
     { Id = orderEntity.Id
       Address = orderEntity.Address
@@ -18,9 +24,11 @@ let internal orderFromEntity (orderEntity: OrderEntity) (products: Product []): 
       Moment = orderEntity.Moment
       Products = products }
 
-let allOrders: Order [] =
+let allOrders (ctx: Context): Order [] =
     query {
-        for order in context.Public.Order do
+        for order in ctx.Public.Order do
+            sortBy order.Moment
+            where (order.Status = statusToString Pending)
             select (order)
     }
     |> Seq.toArray
@@ -28,7 +36,7 @@ let allOrders: Order [] =
         (fun orderEntity ->
             let products: Product [] =
                 query {
-                    for relationship in context.Public.OrderProduct do
+                    for relationship in ctx.Public.OrderProduct do
                         where (relationship.OrderId = orderEntity.Id)
 
                         for product in relationship.``public.product by id`` do
@@ -38,3 +46,32 @@ let allOrders: Order [] =
                 |> Array.map Product.productFromEntity
 
             orderFromEntity orderEntity products)
+
+let postOrder (ctx: Context) (order: PostedOrder): Order =
+    let products: Product [] =
+        query {
+            for product in ctx.Public.Product do
+                select (product)
+        }
+        |> Seq.toArray
+        |> Array.filter (fun p -> Array.contains p.Id order.ProductIds)
+        |> Array.map Product.productFromEntity
+
+    let newOrderEntity =
+        ctx.Public.Order.Create(
+            order.Address,
+            order.Latitude,
+            order.Longitude,
+            System.DateTime.Now,
+            statusToString Pending
+        )
+
+    ctx.SubmitUpdates()
+
+    products
+    |> Array.map (fun p -> ctx.Public.OrderProduct.Create(newOrderEntity.Id, p.Id))
+    |> ignore
+
+    ctx.SubmitUpdates()
+
+    orderFromEntity newOrderEntity products
