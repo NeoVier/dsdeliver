@@ -2,6 +2,7 @@ module Api exposing (fetchProducts)
 
 import Http
 import Json.Decode as Decode exposing (Decoder)
+import LngLat exposing (LngLat)
 import Model.Product as Product exposing (Product)
 
 
@@ -17,8 +18,24 @@ fetchProducts toMsg =
         }
 
 
+fetchLocalMapbox :
+    { location : String, token : String }
+    -> (Result Http.Error LngLat -> msg)
+    -> Cmd msg
+fetchLocalMapbox urlTerms toMsg =
+    Http.get
+        { url = mapboxUrl urlTerms
+        , expect = Http.expectJson toMsg LngLat.decodeFromObject
+        }
+
+
 
 -- INTERNAL
+
+
+mapboxUrl : { location : String, token : String } -> String
+mapboxUrl { location, token } =
+    "https://api.mapbox.com/geocoding/v5/mapbox.places/" ++ location ++ ".json?access_token=" ++ token
 
 
 type ApiEndpoint

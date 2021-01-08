@@ -12,6 +12,7 @@ import Element.Background as Background
 import Element.Font as Font
 import Element.Region as Region
 import Html exposing (Html)
+import MapCommands
 import Page.Home as PHome
 import Page.NotFound as PNotFound
 import Page.Products as PProducts
@@ -33,29 +34,53 @@ type alias Model =
     { currPage : Page
     , navKey : Nav.Key
     , device : Element.DeviceClass
+    , secrets : Secrets
     }
 
 
-init : Dimmensions -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init dimmensions url key =
+type alias Secrets =
+    { mapbox : String }
+
+
+type alias Flags =
+    { secrets : Secrets
+    , windowDimmensions : Dimmensions
+    }
+
+
+init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
+init { secrets, windowDimmensions } url key =
     case Route.fromUrl url of
         Just Route.Products ->
             let
                 ( initialModel, cmd ) =
-                    PProducts.init
+                    PProducts.init secrets.mapbox
             in
             ( { currPage = Products initialModel
               , navKey = key
-              , device = Dimmensions.deviceClass dimmensions
+              , device = Dimmensions.deviceClass windowDimmensions
+              , secrets = secrets
               }
             , Cmd.map GotProductsMsg cmd
             )
 
         Just Route.Home ->
-            ( { currPage = Home, navKey = key, device = Dimmensions.deviceClass dimmensions }, Cmd.none )
+            ( { currPage = Home
+              , navKey = key
+              , device = Dimmensions.deviceClass windowDimmensions
+              , secrets = secrets
+              }
+            , Cmd.none
+            )
 
         Nothing ->
-            ( { currPage = NotFound, navKey = key, device = Dimmensions.deviceClass dimmensions }, Cmd.none )
+            ( { currPage = NotFound
+              , navKey = key
+              , device = Dimmensions.deviceClass windowDimmensions
+              , secrets = secrets
+              }
+            , Cmd.none
+            )
 
 
 
@@ -73,7 +98,7 @@ type Msg
 -- MAIN
 
 
-main : Program Dimmensions Model Msg
+main : Program Flags Model Msg
 main =
     Browser.application
         { init = init
@@ -157,7 +182,7 @@ changeRouteTo maybeRoute model =
         Just Route.Products ->
             let
                 ( initialModel, cmd ) =
-                    PProducts.init
+                    PProducts.init model.secrets.mapbox
             in
             ( { model | currPage = Products initialModel }, Cmd.map GotProductsMsg cmd )
 

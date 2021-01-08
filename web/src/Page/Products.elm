@@ -9,6 +9,10 @@ import Element.Font as Font
 import Element.Region as Region
 import Html.Attributes as Attr
 import Http
+import LngLat exposing (LngLat)
+import MapCommands
+import Mapbox.Element as MapElem
+import Mapbox.Style as MapStyle
 import Model.Product as Product exposing (Product)
 
 
@@ -17,14 +21,19 @@ import Model.Product as Product exposing (Product)
 
 
 type Model
-    = Loading
-    | WithData { products : List Product }
+    = Loading { mapboxApiKey : String }
+    | WithData
+        { products : List Product
+        , location : LngLat
+        , searchString : String
+        , mapboxApiKey : String
+        }
     | WithError
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( Loading, Api.fetchProducts GotProducts )
+init : String -> ( Model, Cmd Msg )
+init mapboxApiKey =
+    ( Loading { mapboxApiKey = mapboxApiKey }, Api.fetchProducts GotProducts )
 
 
 
@@ -37,12 +46,27 @@ type Msg
 
 update : Model -> Msg -> ( Model, Cmd Msg )
 update model msg =
-    case msg of
-        GotProducts (Ok products) ->
-            ( WithData { products = Product.exampleProduct2 :: products }, Cmd.none )
+    case ( msg, model ) of
+        ( GotProducts (Ok products), Loading { mapboxApiKey } ) ->
+            let
+                defaultLocation =
+                    LngLat -49.640783 -27.199832
+            in
+            ( WithData
+                { products = Product.exampleProduct2 :: products
+                , location = defaultLocation
+                , searchString = ""
+                , mapboxApiKey = mapboxApiKey
+                }
+            , MapCommands.panTo [] defaultLocation
+            )
 
-        GotProducts (Err err) ->
+        ( GotProducts (Err err), Loading _ ) ->
             ( WithError, Cmd.none )
+
+        -- Invalid messages
+        ( GotProducts _, _ ) ->
+            ( model, Cmd.none )
 
 
 
@@ -54,14 +78,26 @@ view model =
     Element.column [ Element.width Element.fill, Element.height Element.fill ]
         [ viewHeader
         , case model of
-            Loading ->
+            Loading _ ->
                 Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Loading"
 
             WithError ->
                 Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Something went wrong"
 
             WithData { products } ->
-                viewProductList products
+                Element.el
+                    [ Element.width Element.fill
+                    , Background.color Colors.light
+                    , Element.paddingXY 100 50
+                    ]
+                <|
+                    Element.column
+                        [ Element.width <| Element.maximum 1200 Element.fill
+                        , Element.centerX
+                        ]
+                        [ viewProductList products
+                        , viewMap
+                        ]
         ]
 
 
@@ -97,17 +133,17 @@ viewHeader =
 
 viewProductList : List Product -> Element msg
 viewProductList products =
-    Element.el [ Element.width <| Element.fill, Background.color Colors.light ] <|
-        Element.wrappedRow
-            [ Element.height Element.fill
-            , Element.width <| Element.maximum 1200 Element.fill
-            , Element.spacing 20
-            , Element.paddingXY 100 50
-            , Element.centerX
-            , Element.htmlAttribute <| Attr.class "justify-center"
-            ]
-        <|
-            List.map viewProductCard products
+    Element.wrappedRow
+        [ Element.height Element.fill
+
+        -- , Element.width <| Element.maximum 1200 Element.fill
+        , Element.spacing 20
+        , Element.paddingXY 0 50
+        , Element.centerX
+        , Element.htmlAttribute <| Attr.class "justify-center"
+        ]
+    <|
+        List.map viewProductCard products
 
 
 viewProductCard : Product -> Element msg
@@ -141,4 +177,43 @@ viewProductCard product =
             [ Element.el [ Font.bold, Font.size 16 ] <| Element.text "Descrição"
             , Element.paragraph [ Font.size 14 ] [ Element.text product.description ]
             ]
+        ]
+
+
+viewMap : Element msg
+viewMap =
+    Element.column
+        [ Element.width Element.fill
+        , Element.centerX
+        , Element.paddingEach { top = 30, left = 10, right = 10, bottom = 10 }
+        , Element.spacing 20
+        , Border.rounded 10
+        , Border.shadow
+            { offset = ( 0, 4 )
+            , blur = 20
+            , color = Element.rgba 0 0 0 0.25
+            , size = 0
+            }
+
+        -- 0px 4px 20px rgba(0, 0, 0, 0.25);
+        ]
+        [ Element.el
+            [ Element.centerX
+            , Font.bold
+            , Font.size 18
+            , Font.color Colors.secondary
+            ]
+          <|
+            Element.text "Selecione onde o pedido deve ser entregue"
+        , Element.el
+            [ Element.width Element.fill
+            , Element.centerX
+            , Element.height <| Element.px 500
+            , Border.rounded 10
+            , Element.clip
+            ]
+          <|
+            Element.html <|
+                MapElem.map [ MapElem.id "my-map" ]
+                    (MapStyle.FromUrl "mapbox://styles/mapbox/light-v10")
         ]
