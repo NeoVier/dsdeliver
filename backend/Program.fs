@@ -23,6 +23,8 @@ let webApp =
                           route "/orders" >=> handleGetOrders ]
              POST
              >=> choose [ route "/orders" >=> handlePostOrders ]
+             PUT
+             >=> choose [ routef "/orders/%d/delivered" handlePutDelivered ]
              setStatusCode 404 >=> text "Not Found" ]
 
 // ---------------------------------

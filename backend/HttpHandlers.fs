@@ -34,3 +34,12 @@ let handlePostOrders =
 
             return! json newId next ctx
         }
+
+let handlePutDelivered (id: int64) =
+    fun (next: HttpFunc) (ctx: HttpContext) ->
+        task {
+            Database.Order.setDelivered Database.context id
+            |> ignore
+
+            return! Successful.OK id next ctx
+        }

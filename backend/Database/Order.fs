@@ -75,3 +75,19 @@ let postOrder (ctx: Context) (order: PostedOrder): Order =
     ctx.SubmitUpdates()
 
     orderFromEntity newOrderEntity products
+
+let setDelivered (ctx: Context) (orderId: int64) =
+    let maybeOrderEntity =
+        query {
+            for o in ctx.Public.Order do
+                where (o.Id = orderId)
+                select (Some o)
+                exactlyOneOrDefault
+        }
+
+    match maybeOrderEntity with
+    | Some orderEntity ->
+        orderEntity.Status <- statusToString Delivered
+        ctx.SubmitUpdates()
+        true
+    | None -> false
