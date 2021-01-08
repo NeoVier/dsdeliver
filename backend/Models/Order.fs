@@ -11,4 +11,5 @@ type Order =
       Latitude: double
       Longitude: double
       Status: OrderStatus
-      Moment: System.DateTime }
+      Moment: System.DateTime
+      Products: Product [] }

@@ -6,6 +6,6 @@ Repository made to follow Semana [DevSuperior](https://www.youtube.com/channel/U
 
 ### Backend
 
-- Haskell
-- Yesod
+- F#
+- Giraffe
 - PostgreSQL

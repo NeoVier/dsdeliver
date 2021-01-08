@@ -9,6 +9,13 @@ open Backend.Models
 let handleGetProducts =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
-            let response = { Text = "Products" }
+            let response = Database.Product.allProducts
+            return! json response next ctx
+        }
+
+let handleGetOrders =
+    fun (next: HttpFunc) (ctx: HttpContext) ->
+        task {
+            let response = Database.Order.allOrders
             return! json response next ctx
         }

@@ -15,10 +15,11 @@ open Backend.HttpHandlers
 // ---------------------------------
 
 let webApp =
-    choose [ subRoute
-                 "/api"
-                 (choose [ GET
-                           >=> choose [ route "/products" >=> handleGetProducts ] ])
+    choose [
+
+             GET
+             >=> choose [ route "/products" >=> handleGetProducts
+                          route "/orders" >=> handleGetOrders ]
              setStatusCode 404 >=> text "Not Found" ]
 
 // ---------------------------------

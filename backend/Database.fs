@@ -4,20 +4,20 @@ module Backend.Database
 open FSharp.Data.Sql
 
 [<Literal>]
-let internal Host = "localhost"
+let private Host = "localhost"
 
 [<Literal>]
-let internal Database = "dsdeliver"
+let private Database = "dsdeliver"
 
 [<Literal>]
-let internal ConnectionString = "Host=" + Host + ";Database=" + Database
+let private ConnectionString = "Host=" + Host + ";Database=" + Database
 
 [<Literal>]
-let internal DbProvider = Common.DatabaseProviderTypes.POSTGRESQL
+let private DbProvider = Common.DatabaseProviderTypes.POSTGRESQL
 
-type internal Sql = SqlDataProvider<DbProvider, ConnectionString>
+type private Sql = SqlDataProvider<DbProvider, ConnectionString>
 
 type ProductEntity = Sql.dataContext.``public.productEntity``
 type OrderEntity = Sql.dataContext.``public.orderEntity``
 
-let ctx = Sql.GetDataContext()
+let context = Sql.GetDataContext()
