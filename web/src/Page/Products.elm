@@ -97,15 +97,17 @@ viewHeader =
 
 viewProductList : List Product -> Element msg
 viewProductList products =
-    Element.wrappedRow
-        [ Element.height Element.fill
-        , Element.width Element.fill
-        , Background.color Colors.light
-        , Element.spacing 20
-        , Element.paddingXY 100 20
-        ]
-    <|
-        List.map viewProductCard products
+    Element.el [ Element.width <| Element.fill, Background.color Colors.light ] <|
+        Element.wrappedRow
+            [ Element.height Element.fill
+            , Element.width <| Element.maximum 1200 Element.fill
+            , Element.spacing 20
+            , Element.paddingXY 100 50
+            , Element.centerX
+            , Element.htmlAttribute <| Attr.class "justify-center"
+            ]
+        <|
+            List.map viewProductCard products
 
 
 viewProductCard : Product -> Element msg

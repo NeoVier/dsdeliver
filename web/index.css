@@ -1,3 +1,7 @@
 .product-card {
     transition: transform 100ms ease-out;
 }
+
+.justify-center {
+    justify-content: center !important;
+}
