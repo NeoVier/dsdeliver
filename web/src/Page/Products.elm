@@ -46,7 +46,6 @@ update model msg =
 
 
 
--- ( WithData { products = Product.exampleProduct2 :: List.repeat 10 Product.exampleProduct }, Cmd.none )
 -- VIEW
 
 
@@ -59,7 +58,7 @@ view model =
                 Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Loading"
 
             WithError ->
-                Element.el [ Element.centerX ] <| Element.text "Something went wrong"
+                Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Something went wrong"
 
             WithData { products } ->
                 viewProductList products
