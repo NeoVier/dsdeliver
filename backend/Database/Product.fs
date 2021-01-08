@@ -10,8 +10,6 @@ let internal productFromEntity (productEntity: ProductEntity): Product =
       Id = productEntity.Id }
 
 let allProducts (ctx: Context): Product [] =
-    printfn $"Fetching all products"
-
     query {
         for product in ctx.Public.Product do
             sortBy (product.Name)
