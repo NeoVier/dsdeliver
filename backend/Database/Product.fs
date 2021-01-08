@@ -1,6 +1,5 @@
 module Backend.Database.Product
 
-open Backend.Database
 open Backend.Models
 
 let internal fromEntity (productEntity: ProductEntity): Product =

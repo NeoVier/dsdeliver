@@ -1,7 +1,6 @@
 module Backend.Database.Order
 
 open Backend.Models
-open Backend.Database
 
 
 let internal statusFromString (status: string): OrderStatus =

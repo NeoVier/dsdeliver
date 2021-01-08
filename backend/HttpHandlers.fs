@@ -5,9 +5,10 @@ open FSharp.Control.Tasks
 open Giraffe
 open Backend.Models
 
-let handleGetHello =
+
+let handleGetProducts =
     fun (next: HttpFunc) (ctx: HttpContext) ->
         task {
-            let response = { Text = "Hello world, from Giraffe!" }
+            let response = { Text = "Products" }
             return! json response next ctx
         }
