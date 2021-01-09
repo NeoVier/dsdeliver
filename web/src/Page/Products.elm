@@ -149,6 +149,7 @@ view model =
                     Element.column
                         [ Element.width <| Element.maximum 1200 Element.fill
                         , Element.centerX
+                        , Element.spacing 50
                         ]
                         [ viewProductList products
                         , viewMap
@@ -156,6 +157,7 @@ view model =
                             , mapboxApiKey = mapboxApiKey
                             }
                             features
+                        , viewSummary products
                         ]
         ]
 
@@ -203,7 +205,6 @@ viewProductList products =
     Element.wrappedRow
         [ Element.height Element.fill
         , Element.spacing 20
-        , Element.paddingXY 0 50
         , Element.centerX
         , Element.htmlAttribute <| Attr.class "justify-center"
         ]
@@ -236,7 +237,7 @@ viewProductCard product =
             Element.text product.name
         , Element.image [ Border.rounded 10, Element.clip, Element.centerX, Element.centerY, Element.width <| Element.px 220 ] { src = product.imageUri, description = product.name }
         , Element.el [ Font.bold, Font.color Colors.primary, Font.size 24 ] <|
-            Element.text ("R$ " ++ Product.formatPrice product.price)
+            Element.text (Product.formatPrice product.price)
         , Element.el [ Element.width Element.fill, Element.height <| Element.px 2, Background.color <| Element.rgb255 0xE6 0xE6 0xE6 ] Element.none
         , Element.column [ Element.spacing 30, Element.height Element.fill ]
             [ Element.el [ Font.bold, Font.size 16 ] <| Element.text "Descrição"
@@ -399,3 +400,46 @@ viewFeature ({ placeName, location } as feature) =
         { onPress = Just (SelectedFeature feature)
         , label = Element.el [ Element.centerY ] <| Element.text placeName
         }
+
+
+
+-- SUMMARY
+
+
+viewSummary : List Product -> Element Msg
+viewSummary products =
+    if List.isEmpty products then
+        Element.none
+
+    else
+        Element.row
+            [ Element.width Element.fill
+            , Background.color Colors.primary
+            , Element.padding 20
+            , Font.color <| Element.rgb 1 1 1
+            , Border.rounded 10
+            ]
+            [ Element.column [ Element.width Element.fill, Element.spacing 10 ]
+                [ Element.paragraph []
+                    [ Element.el [ Font.bold, Font.size 16 ] <| Element.text <| String.fromInt <| List.length products
+                    , Element.el [ Font.size 11 ] <| Element.text " PEDIDOS SELECIONADOS"
+                    ]
+                , Element.paragraph [ Font.size 18 ]
+                    [ Element.el [ Font.bold ] <| Element.text <| Product.formatPrice <| List.sum <| List.map .price products
+                    , Element.el [] <| Element.text " VALOR TOTAL"
+                    ]
+                ]
+            , Input.button
+                [ Element.alignRight
+                , Element.height Element.fill
+                , Element.paddingXY 40 20
+                , Element.mouseOver [ Background.color Colors.light ]
+                , Background.color <| Element.rgb 1 1 1
+                , Border.rounded 10
+                , Font.color Colors.primary
+                , Font.center
+                , Font.size 18
+                , Font.bold
+                ]
+                { onPress = Nothing, label = Element.text "FAZER PEDIDO" }
+            ]

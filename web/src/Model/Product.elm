@@ -18,7 +18,8 @@ type alias Product =
 
 formatPrice : Float -> String
 formatPrice price =
-    String.fromFloat price
+    "R$ "
+        ++ String.fromFloat price
         |> addComma
         |> normalizeZeros
 
