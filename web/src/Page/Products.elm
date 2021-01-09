@@ -78,7 +78,7 @@ update model msg =
             ( WithError, Cmd.none )
 
         ( ChangedSearch newSearch, WithData wd ) ->
-            ( WithData { wd | searchString = newSearch }, Cmd.none )
+            ( WithData { wd | searchString = newSearch }, Api.fetchMapbox { location = wd.searchString, token = wd.mapboxApiKey } GotSearch )
 
         ( ClickedSearch { searchString, mapboxApiKey }, WithData wd ) ->
             ( WithData wd
@@ -94,8 +94,8 @@ update model msg =
             , Cmd.none
             )
 
-        ( GotSearch (Err _), WithData wd ) ->
-            ( WithData { wd | searchString = "There was a problem" }, Cmd.none )
+        ( GotSearch (Err err), WithData wd ) ->
+            ( model, Cmd.none )
 
         ( SelectedFeature feature, WithData wd ) ->
             ( WithData
@@ -160,6 +160,10 @@ view model =
         ]
 
 
+
+-- HEADER
+
+
 viewHeader : Element msg
 viewHeader =
     let
@@ -188,6 +192,10 @@ viewHeader =
                 ]
             ]
         ]
+
+
+
+-- PRODUCTS
 
 
 viewProductList : List Product -> Element msg
@@ -235,6 +243,10 @@ viewProductCard product =
             , Element.paragraph [ Font.size 14 ] [ Element.text product.description ]
             ]
         ]
+
+
+
+-- MAP
 
 
 viewMap :
@@ -355,6 +367,8 @@ viewFeatures features =
             , Background.color <| Element.rgb 1 1 1
             , Border.rounded 10
             , Element.padding 25
+            , Font.center
+            , Font.color Colors.secondary
             ]
         <|
             Element.text "Nenhum resultado encontrado"
