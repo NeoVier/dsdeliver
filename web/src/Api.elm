@@ -1,4 +1,4 @@
-module Api exposing (fetchProducts)
+module Api exposing (Feature, fetchMapbox, fetchProducts)
 
 import Http
 import Json.Decode as Decode exposing (Decoder)
@@ -7,6 +7,7 @@ import Model.Product as Product exposing (Product)
 
 
 
+-- OWN API
 -- PUBLIC HELPERS
 
 
@@ -18,24 +19,8 @@ fetchProducts toMsg =
         }
 
 
-fetchLocalMapbox :
-    { location : String, token : String }
-    -> (Result Http.Error LngLat -> msg)
-    -> Cmd msg
-fetchLocalMapbox urlTerms toMsg =
-    Http.get
-        { url = mapboxUrl urlTerms
-        , expect = Http.expectJson toMsg LngLat.decodeFromObject
-        }
-
-
 
 -- INTERNAL
-
-
-mapboxUrl : { location : String, token : String } -> String
-mapboxUrl { location, token } =
-    "https://api.mapbox.com/geocoding/v5/mapbox.places/" ++ location ++ ".json?access_token=" ++ token
 
 
 type ApiEndpoint
@@ -71,3 +56,42 @@ productDecoder =
         (Decode.field "price" Decode.float)
         (Decode.field "imageUri" Decode.string)
         (Decode.field "id" Decode.int)
+
+
+
+-- MAPBOX
+-- PUBLIC HELPERS
+
+
+fetchMapbox :
+    { location : String, token : String }
+    -> (Result Http.Error (List Feature) -> msg)
+    -> Cmd msg
+fetchMapbox urlTerms toMsg =
+    Http.get
+        { url = mapboxUrl urlTerms
+        , expect = Http.expectJson toMsg <| Decode.field "features" (Decode.list decodeFeature)
+        }
+
+
+type alias Feature =
+    { placeName : String, location : LngLat }
+
+
+
+-- INTERNAL
+
+
+mapboxUrl : { location : String, token : String } -> String
+mapboxUrl { location, token } =
+    "https://api.mapbox.com/geocoding/v5/mapbox.places/" ++ location ++ ".json?access_token=" ++ token
+
+
+decodeFeature : Decoder Feature
+decodeFeature =
+    Decode.map2 Feature
+        (Decode.field "place_name" Decode.string)
+        (Decode.map2 LngLat
+            (Decode.field "center" (Decode.index 0 Decode.float))
+            (Decode.field "center" (Decode.index 1 Decode.float))
+        )

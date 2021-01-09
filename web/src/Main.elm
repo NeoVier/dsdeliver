@@ -131,6 +131,7 @@ view model =
 
                     Products productsModel ->
                         PProducts.view productsModel
+                            |> Element.map GotProductsMsg
 
                     NotFound ->
                         PNotFound.view
