@@ -348,17 +348,29 @@ viewMapSearch ({ searchString, mapboxApiKey } as opts) maybeFeatures =
 
 viewFeatures : List Api.Feature -> Element Msg
 viewFeatures features =
-    Element.column
-        [ Element.width Element.fill
-        , Element.height <| Element.minimum 300 Element.fill
-        , Element.moveDown 10
-        , Background.color <| Element.rgb 1 1 1
-        , Border.rounded 10
-        , Element.clip
-        , Element.scrollbarY
-        ]
-    <|
-        List.map viewFeature features
+    if List.isEmpty features then
+        Element.el
+            [ Element.width Element.fill
+            , Element.moveDown 10
+            , Background.color <| Element.rgb 1 1 1
+            , Border.rounded 10
+            , Element.padding 25
+            ]
+        <|
+            Element.text "Nenhum resultado encontrado"
+
+    else
+        Element.column
+            [ Element.width Element.fill
+            , Element.height <| Element.minimum 300 <| Element.minimum (150 * List.length features) Element.fill
+            , Element.moveDown 10
+            , Background.color <| Element.rgb 1 1 1
+            , Border.rounded 10
+            , Element.clip
+            , Element.scrollbarY
+            ]
+        <|
+            List.map viewFeature features
 
 
 viewFeature : Api.Feature -> Element Msg
