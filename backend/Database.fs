@@ -21,7 +21,7 @@ let private connectionString =
 [<Literal>]
 let private DbProvider = Common.DatabaseProviderTypes.POSTGRESQL
 
-type private Sql = SqlDataProvider<DbProvider, DevConnection>
+type private Sql = SqlDataProvider<DbProvider, Env.BackendUrl>
 
 type ProductEntity = Sql.dataContext.``public.productEntity``
 type OrderEntity = Sql.dataContext.``public.orderEntity``

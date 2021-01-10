@@ -13,7 +13,12 @@
     <PackageReference Include="SQLProvider" Version="1.1.98" />
   </ItemGroup>
 
+  <Target Name="PrecompileScript" BeforeTargets="BeforeBuild">
+    <Exec Command="scripts/prebuild.sh" />
+  </Target>
+
   <ItemGroup>
+    <Compile Include="Env.fs" />
     <Compile Include="Models/Product.fs" />
     <Compile Include="Models/Order.fs" />
     <Compile Include="Database.fs" />
