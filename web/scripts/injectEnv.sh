@@ -1,5 +1,7 @@
 #!/bin/sh
 
+touch ./.env
+
 source ./.env
 
 echo "export const MAPBOX_API_KEY=\"$MAPBOX_API_KEY\"" > .env.js
