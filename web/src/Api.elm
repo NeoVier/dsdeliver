@@ -42,7 +42,7 @@ type ApiEndpoint
 
 endpointUrl : ApiEndpoint -> String
 endpointUrl endpoint =
-    String.join "/" (apiUrl :: endpointParts endpoint)
+    String.join "/" (Env.backendUrl :: endpointParts endpoint)
 
 
 endpointParts : ApiEndpoint -> List String
@@ -53,11 +53,6 @@ endpointParts endpoint =
 
         Orders ->
             [ "orders" ]
-
-
-apiUrl : String
-apiUrl =
-    "https://localhost:5001"
 
 
 productDecoder : Decoder Product

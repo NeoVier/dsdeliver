@@ -11,6 +11,7 @@
   "scripts": {
     "prebuild": "scripts/injectEnv.sh",
     "build": "parcel build ./index.html",
+    "postbuild": "cp -r assets dist",
     "prestart": "scripts/injectEnv.sh",
     "start": "parcel ./index.html"
   }
