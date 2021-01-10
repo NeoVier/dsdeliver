@@ -9,6 +9,7 @@ open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
 open Backend.HttpHandlers
+open FSharp.Data.LiteralProviders
 
 
 // ---------------------------------
@@ -75,6 +76,8 @@ let configureLogging (builder: ILoggingBuilder) =
 
 [<EntryPoint>]
 let main args =
+    printfn $"{Env.BACKEND_URL.Value}"
+
     Host
         .CreateDefaultBuilder(args)
         .ConfigureWebHostDefaults(fun webHostBuilder ->

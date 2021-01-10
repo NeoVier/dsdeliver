@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FSharp.Data.LiteralProviders" Version="0.3.5" />
     <PackageReference Include="Giraffe" Version="5.0.0-rc-6" />
     <PackageReference Include="Npgsql" Version="5.0.1.1" />
     <PackageReference Include="Ply" Version="0.3.*" />
@@ -18,7 +19,7 @@
   </Target>
 
   <ItemGroup>
-    <Compile Include="Env.fs" />
+    <!-- <Compile Include="Env.fs" /> -->
     <Compile Include="Models/Product.fs" />
     <Compile Include="Models/Order.fs" />
     <Compile Include="Database.fs" />
