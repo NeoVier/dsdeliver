@@ -32,6 +32,7 @@ type Model
         , searchString : String
         , mapboxApiKey : String
         , features : Maybe (List Api.Feature)
+        , selectedProducts : List Product
         }
     | WithError
 
@@ -51,6 +52,7 @@ type Msg
     | ClickedSearch { searchString : String, mapboxApiKey : String }
     | GotSearch (Result Http.Error (List Api.Feature))
     | SelectedFeature Api.Feature
+    | SelectedProduct Product
 
 
 update : Model -> Msg -> ( Model, Cmd Msg )
@@ -67,6 +69,7 @@ update model msg =
                 , searchString = ""
                 , mapboxApiKey = mapboxApiKey
                 , features = Nothing
+                , selectedProducts = []
                 }
             , MapCommands.jumpTo
                 [ MapOption.center defaultLocation
@@ -107,6 +110,13 @@ update model msg =
             , MapCommands.panTo [] feature.location
             )
 
+        ( SelectedProduct newProduct, WithData wd ) ->
+            if List.member newProduct wd.selectedProducts then
+                ( WithData { wd | selectedProducts = List.filter (\p -> p /= newProduct) wd.selectedProducts }, Cmd.none )
+
+            else
+                ( WithData { wd | selectedProducts = newProduct :: wd.selectedProducts }, Cmd.none )
+
         -- Invalid messages
         ( GotProducts _, _ ) ->
             ( model, Cmd.none )
@@ -121,6 +131,9 @@ update model msg =
             ( model, Cmd.none )
 
         ( SelectedFeature _, _ ) ->
+            ( model, Cmd.none )
+
+        ( SelectedProduct _, _ ) ->
             ( model, Cmd.none )
 
 
@@ -139,7 +152,7 @@ view model =
             WithError ->
                 Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Something went wrong"
 
-            WithData { products, searchString, mapboxApiKey, features } ->
+            WithData { products, searchString, mapboxApiKey, features, selectedProducts } ->
                 Element.el
                     [ Element.width Element.fill
                     , Background.color Colors.light
@@ -151,13 +164,13 @@ view model =
                         , Element.centerX
                         , Element.spacing 50
                         ]
-                        [ viewProductList products
+                        [ viewProductList { allProducts = products, selectedProducts = selectedProducts }
                         , viewMap
                             { searchString = searchString
                             , mapboxApiKey = mapboxApiKey
                             }
                             features
-                        , viewSummary products
+                        , viewSummary selectedProducts
                         ]
         ]
 
@@ -200,8 +213,8 @@ viewHeader =
 -- PRODUCTS
 
 
-viewProductList : List Product -> Element msg
-viewProductList products =
+viewProductList : { allProducts : List Product, selectedProducts : List Product } -> Element Msg
+viewProductList { allProducts, selectedProducts } =
     Element.wrappedRow
         [ Element.height Element.fill
         , Element.spacing 20
@@ -209,41 +222,52 @@ viewProductList products =
         , Element.htmlAttribute <| Attr.class "justify-center"
         ]
     <|
-        List.map viewProductCard products
+        List.map (\p -> viewProductCard p (List.member p selectedProducts)) allProducts
 
 
-viewProductCard : Product -> Element msg
-viewProductCard product =
-    Element.column
-        [ Background.color <| Element.rgb 1 1 1
-        , Border.rounded 10
-        , Element.padding 20
-        , Element.spacing 20
-        , Border.shadow { offset = ( 0, 4 ), size = 0, blur = 20, color = Element.rgba 0 0 0 0.25 }
-        , Font.color Colors.secondary
-        , Element.mouseOver [ Element.scale 1.01 ]
-        , Element.width <| Element.maximum 300 Element.fill
-        , Element.height Element.fill
-        , Element.htmlAttribute <| Attr.class "product-card"
-        ]
-        [ Element.el
-            [ Font.center
-            , Element.width Element.fill
-            , Font.color Colors.primary
-            , Font.bold
-            , Font.size 18
-            ]
-          <|
-            Element.text product.name
-        , Element.image [ Border.rounded 10, Element.clip, Element.centerX, Element.centerY, Element.width <| Element.px 220 ] { src = product.imageUri, description = product.name }
-        , Element.el [ Font.bold, Font.color Colors.primary, Font.size 24 ] <|
-            Element.text (Product.formatPrice product.price)
-        , Element.el [ Element.width Element.fill, Element.height <| Element.px 2, Background.color <| Element.rgb255 0xE6 0xE6 0xE6 ] Element.none
-        , Element.column [ Element.spacing 30, Element.height Element.fill ]
-            [ Element.el [ Font.bold, Font.size 16 ] <| Element.text "Descrição"
-            , Element.paragraph [ Font.size 14 ] [ Element.text product.description ]
-            ]
-        ]
+viewProductCard : Product -> Bool -> Element Msg
+viewProductCard product isSelected =
+    Input.button []
+        { onPress = Just <| SelectedProduct product
+        , label =
+            Element.column
+                [ Background.color <| Element.rgb 1 1 1
+                , Border.rounded 10
+                , Border.color <|
+                    if isSelected then
+                        Colors.primary
+
+                    else
+                        Element.rgba 0 0 0 0
+                , Border.width 3
+                , Element.padding 20
+                , Element.spacing 20
+                , Border.shadow { offset = ( 0, 4 ), size = 0, blur = 20, color = Element.rgba 0 0 0 0.25 }
+                , Font.color Colors.secondary
+                , Element.mouseOver [ Element.scale 1.01 ]
+                , Element.width <| Element.maximum 300 Element.fill
+                , Element.height Element.fill
+                , Element.htmlAttribute <| Attr.class "product-card"
+                ]
+                [ Element.el
+                    [ Font.center
+                    , Element.width Element.fill
+                    , Font.color Colors.primary
+                    , Font.bold
+                    , Font.size 18
+                    ]
+                  <|
+                    Element.text product.name
+                , Element.image [ Border.rounded 10, Element.clip, Element.centerX, Element.centerY, Element.width <| Element.px 220 ] { src = product.imageUri, description = product.name }
+                , Element.el [ Font.bold, Font.color Colors.primary, Font.size 24 ] <|
+                    Element.text (Product.formatPrice product.price)
+                , Element.el [ Element.width Element.fill, Element.height <| Element.px 2, Background.color <| Element.rgb255 0xE6 0xE6 0xE6 ] Element.none
+                , Element.column [ Element.spacing 30, Element.height Element.fill ]
+                    [ Element.el [ Font.bold, Font.size 16 ] <| Element.text "Descrição"
+                    , Element.paragraph [ Font.size 14 ] [ Element.text product.description ]
+                    ]
+                ]
+        }
 
 
 
