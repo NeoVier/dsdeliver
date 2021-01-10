@@ -20,4 +20,7 @@ node_modules
 dist
 
 
+# Env variables
+.env
 .env.js
+src/Env.elm

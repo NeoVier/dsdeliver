@@ -1,5 +1,7 @@
 module Page.Products exposing (Model, Msg, init, update, view)
 
+-- import Env
+
 import Api
 import Colors
 import Element exposing (Element)
@@ -25,12 +27,11 @@ import Model.Product as Product exposing (Product)
 
 
 type Model
-    = Loading { mapboxApiKey : String }
+    = Loading
     | WithData
         { products : List Product
         , location : LngLat
         , searchString : String
-        , mapboxApiKey : String
         , features : Maybe (List Api.Feature)
         , selectedProducts : List Product
         , locationAddress : Maybe String
@@ -45,9 +46,9 @@ type OrderStatus
     | Sending
 
 
-init : String -> ( Model, Cmd Msg )
-init mapboxApiKey =
-    ( Loading { mapboxApiKey = mapboxApiKey }, Api.fetchProducts GotProducts )
+init : ( Model, Cmd Msg )
+init =
+    ( Loading, Api.fetchProducts GotProducts )
 
 
 
@@ -57,7 +58,7 @@ init mapboxApiKey =
 type Msg
     = GotProducts (Result Http.Error (List Product))
     | ChangedSearch String
-    | ClickedSearch { searchString : String, mapboxApiKey : String }
+    | ClickedSearch String
     | GotSearch (Result Http.Error (List Api.Feature))
     | SelectedFeature Api.Feature
     | SelectedProduct Product
@@ -69,7 +70,7 @@ type Msg
 update : Model -> Msg -> ( Model, Cmd Msg )
 update model msg =
     case ( msg, model ) of
-        ( GotProducts (Ok products), Loading { mapboxApiKey } ) ->
+        ( GotProducts (Ok products), Loading ) ->
             let
                 defaultLocation =
                     LngLat -49.640783 -27.199832
@@ -78,7 +79,6 @@ update model msg =
                 { products = Product.exampleProduct2 :: products
                 , location = defaultLocation
                 , searchString = ""
-                , mapboxApiKey = mapboxApiKey
                 , features = Nothing
                 , selectedProducts = []
                 , locationAddress = Nothing
@@ -90,22 +90,16 @@ update model msg =
                 ]
             )
 
-        ( GotProducts (Err err), Loading _ ) ->
+        ( GotProducts (Err err), Loading ) ->
             ( WithError, Cmd.none )
 
         ( ChangedSearch newSearch, WithData wd ) ->
             ( WithData { wd | searchString = newSearch }
-            , Api.fetchMapbox { location = newSearch, token = wd.mapboxApiKey } GotSearch
+            , Api.fetchMapbox newSearch GotSearch
             )
 
-        ( ClickedSearch { searchString, mapboxApiKey }, WithData wd ) ->
-            ( WithData wd
-            , Api.fetchMapbox
-                { location = searchString
-                , token = mapboxApiKey
-                }
-                GotSearch
-            )
+        ( ClickedSearch searchString, WithData wd ) ->
+            ( WithData wd, Api.fetchMapbox searchString GotSearch )
 
         ( GotSearch (Ok features), WithData wd ) ->
             ( WithData { wd | features = Just features }
@@ -207,7 +201,8 @@ view model =
     Element.column [ Element.width Element.fill, Element.height Element.fill ]
         [ viewHeader
         , case model of
-            Loading _ ->
+            -- Loading _ ->
+            Loading ->
                 Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Loading"
 
             WithError ->
@@ -238,10 +233,7 @@ view model =
                             { allProducts = wd.products
                             , selectedProducts = wd.selectedProducts
                             }
-                        , viewMap
-                            { searchString = wd.searchString
-                            , mapboxApiKey = wd.mapboxApiKey
-                            }
+                        , viewMap wd.searchString
                             wd.features
                         , viewSummary wd.selectedProducts wd.orderStatus
                         ]
@@ -347,11 +339,8 @@ viewProductCard product isSelected =
 -- MAP
 
 
-viewMap :
-    { searchString : String, mapboxApiKey : String }
-    -> Maybe (List Api.Feature)
-    -> Element Msg
-viewMap ({ searchString, mapboxApiKey } as opts) maybeFeatures =
+viewMap : String -> Maybe (List Api.Feature) -> Element Msg
+viewMap searchString maybeFeatures =
     Element.column
         [ Element.width Element.fill
         , Element.centerX
@@ -381,7 +370,7 @@ viewMap ({ searchString, mapboxApiKey } as opts) maybeFeatures =
             , Border.rounded 10
             , Element.clip
             , Background.color <| Colors.light
-            , Element.inFront <| viewMapSearch opts maybeFeatures
+            , Element.inFront <| viewMapSearch searchString maybeFeatures
             ]
           <|
             Element.html <|
@@ -390,8 +379,8 @@ viewMap ({ searchString, mapboxApiKey } as opts) maybeFeatures =
         ]
 
 
-viewMapSearch : { searchString : String, mapboxApiKey : String } -> Maybe (List Api.Feature) -> Element Msg
-viewMapSearch ({ searchString, mapboxApiKey } as opts) maybeFeatures =
+viewMapSearch : String -> Maybe (List Api.Feature) -> Element Msg
+viewMapSearch searchString maybeFeatures =
     Element.column
         [ Element.moveDown 10
         , Element.width <| Element.fill
@@ -417,7 +406,7 @@ viewMapSearch ({ searchString, mapboxApiKey } as opts) maybeFeatures =
                     , Element.height <| Element.fill
                     , Element.paddingXY 40 0
                     ]
-                    { onPress = Just <| ClickedSearch opts
+                    { onPress = Just <| ClickedSearch searchString
                     , label =
                         Element.image
                             []
@@ -431,7 +420,7 @@ viewMapSearch ({ searchString, mapboxApiKey } as opts) maybeFeatures =
                         |> Decode.andThen
                             (\key ->
                                 if key == "Enter" then
-                                    Decode.succeed (ClickedSearch opts)
+                                    Decode.succeed (ClickedSearch searchString)
 
                                 else
                                     Decode.fail "Not the enter key"

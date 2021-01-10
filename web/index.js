@@ -2,15 +2,13 @@ import { registerCustomElement, registerPorts } from "elm-mapbox";
 import { MAPBOX_API_KEY } from "./.env.js";
 import { Elm } from "./src/Main.elm";
 
-registerCustomElement({
-  token: MAPBOX_API_KEY,
-});
+registerCustomElement({ token: MAPBOX_API_KEY });
 
 const app = Elm.Main.init({
   node: document.getElementById("main"),
   flags: {
-    secrets: { mapbox: MAPBOX_API_KEY },
-    windowDimmensions: { width: window.innerWidth, height: window.innerHeight },
+    width: window.innerWidth,
+    height: window.innerHeight,
   },
 });
 

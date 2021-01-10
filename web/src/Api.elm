@@ -1,5 +1,6 @@
 module Api exposing (Feature, fetchMapbox, fetchProducts, postOrder)
 
+import Env
 import Http
 import Json.Decode as Decode exposing (Decoder)
 import Json.Encode as Encode exposing (Value)
@@ -85,12 +86,12 @@ encodeOrder { lngLat, address, productIds } =
 
 
 fetchMapbox :
-    { location : String, token : String }
+    String
     -> (Result Http.Error (List Feature) -> msg)
     -> Cmd msg
-fetchMapbox urlTerms toMsg =
+fetchMapbox searchString toMsg =
     Http.get
-        { url = mapboxUrl urlTerms
+        { url = mapboxUrl searchString
         , expect = Http.expectJson toMsg <| Decode.field "features" (Decode.list decodeFeature)
         }
 
@@ -103,9 +104,12 @@ type alias Feature =
 -- INTERNAL
 
 
-mapboxUrl : { location : String, token : String } -> String
-mapboxUrl { location, token } =
-    "https://api.mapbox.com/geocoding/v5/mapbox.places/" ++ location ++ ".json?access_token=" ++ token
+mapboxUrl : String -> String
+mapboxUrl location =
+    "https://api.mapbox.com/geocoding/v5/mapbox.places/"
+        ++ location
+        ++ ".json?access_token="
+        ++ Env.mapboxApiKey
 
 
 decodeFeature : Decoder Feature

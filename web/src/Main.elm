@@ -34,32 +34,24 @@ type alias Model =
     { currPage : Page
     , navKey : Nav.Key
     , device : Element.DeviceClass
-    , secrets : Secrets
     }
-
-
-type alias Secrets =
-    { mapbox : String }
 
 
 type alias Flags =
-    { secrets : Secrets
-    , windowDimmensions : Dimmensions
-    }
+    Dimmensions
 
 
 init : Flags -> Url.Url -> Nav.Key -> ( Model, Cmd Msg )
-init { secrets, windowDimmensions } url key =
+init windowDimmensions url key =
     case Route.fromUrl url of
         Just Route.Products ->
             let
                 ( initialModel, cmd ) =
-                    PProducts.init secrets.mapbox
+                    PProducts.init
             in
             ( { currPage = Products initialModel
               , navKey = key
               , device = Dimmensions.deviceClass windowDimmensions
-              , secrets = secrets
               }
             , Cmd.map GotProductsMsg cmd
             )
@@ -68,7 +60,6 @@ init { secrets, windowDimmensions } url key =
             ( { currPage = Home
               , navKey = key
               , device = Dimmensions.deviceClass windowDimmensions
-              , secrets = secrets
               }
             , Cmd.none
             )
@@ -77,7 +68,6 @@ init { secrets, windowDimmensions } url key =
             ( { currPage = NotFound
               , navKey = key
               , device = Dimmensions.deviceClass windowDimmensions
-              , secrets = secrets
               }
             , Cmd.none
             )
@@ -183,7 +173,7 @@ changeRouteTo maybeRoute model =
         Just Route.Products ->
             let
                 ( initialModel, cmd ) =
-                    PProducts.init model.secrets.mapbox
+                    PProducts.init
             in
             ( { model | currPage = Products initialModel }, Cmd.map GotProductsMsg cmd )
 
