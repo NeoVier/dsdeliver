@@ -33,8 +33,16 @@ type Model
         , mapboxApiKey : String
         , features : Maybe (List Api.Feature)
         , selectedProducts : List Product
+        , locationAddress : Maybe String
+        , orderStatus : Maybe OrderStatus
         }
     | WithError
+
+
+type OrderStatus
+    = Success
+    | Error String
+    | Sending
 
 
 init : String -> ( Model, Cmd Msg )
@@ -53,6 +61,9 @@ type Msg
     | GotSearch (Result Http.Error (List Api.Feature))
     | SelectedFeature Api.Feature
     | SelectedProduct Product
+    | ClickedSendOrder
+    | SentOrder (Result Http.Error ())
+    | ClickedNewOrder
 
 
 update : Model -> Msg -> ( Model, Cmd Msg )
@@ -70,6 +81,8 @@ update model msg =
                 , mapboxApiKey = mapboxApiKey
                 , features = Nothing
                 , selectedProducts = []
+                , locationAddress = Nothing
+                , orderStatus = Nothing
                 }
             , MapCommands.jumpTo
                 [ MapOption.center defaultLocation
@@ -81,7 +94,9 @@ update model msg =
             ( WithError, Cmd.none )
 
         ( ChangedSearch newSearch, WithData wd ) ->
-            ( WithData { wd | searchString = newSearch }, Api.fetchMapbox { location = wd.searchString, token = wd.mapboxApiKey } GotSearch )
+            ( WithData { wd | searchString = newSearch }
+            , Api.fetchMapbox { location = newSearch, token = wd.mapboxApiKey } GotSearch
+            )
 
         ( ClickedSearch { searchString, mapboxApiKey }, WithData wd ) ->
             ( WithData wd
@@ -106,6 +121,7 @@ update model msg =
                     | features = Nothing
                     , searchString = feature.placeName
                     , location = feature.location
+                    , locationAddress = Just feature.placeName
                 }
             , MapCommands.panTo [] feature.location
             )
@@ -116,6 +132,42 @@ update model msg =
 
             else
                 ( WithData { wd | selectedProducts = newProduct :: wd.selectedProducts }, Cmd.none )
+
+        ( ClickedSendOrder, WithData wd ) ->
+            case wd.locationAddress of
+                Nothing ->
+                    ( WithData
+                        { wd
+                            | orderStatus =
+                                Just <|
+                                    Error "Selecione um endereço para poder enviar o pedido"
+                        }
+                    , Cmd.none
+                    )
+
+                Just address ->
+                    let
+                        order =
+                            { lngLat = wd.location
+                            , address = address
+                            , productIds = List.map .id wd.selectedProducts
+                            }
+                    in
+                    ( model, Api.postOrder order SentOrder )
+
+        ( SentOrder (Ok ()), WithData wd ) ->
+            ( WithData { wd | selectedProducts = [], orderStatus = Just Success }, Cmd.none )
+
+        ( SentOrder (Err _), WithData wd ) ->
+            ( WithData
+                { wd
+                    | orderStatus = Just <| Error "Ocorreu um erro ao processar pedido"
+                }
+            , Cmd.none
+            )
+
+        ( ClickedNewOrder, WithData wd ) ->
+            ( WithData { wd | orderStatus = Nothing, selectedProducts = [] }, Cmd.none )
 
         -- Invalid messages
         ( GotProducts _, _ ) ->
@@ -136,6 +188,15 @@ update model msg =
         ( SelectedProduct _, _ ) ->
             ( model, Cmd.none )
 
+        ( ClickedSendOrder, _ ) ->
+            ( model, Cmd.none )
+
+        ( SentOrder _, _ ) ->
+            ( model, Cmd.none )
+
+        ( ClickedNewOrder, _ ) ->
+            ( model, Cmd.none )
+
 
 
 -- VIEW
@@ -152,7 +213,16 @@ view model =
             WithError ->
                 Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Something went wrong"
 
-            WithData { products, searchString, mapboxApiKey, features, selectedProducts } ->
+            WithData wd ->
+                let
+                    isSent =
+                        case wd.orderStatus of
+                            Just Success ->
+                                True
+
+                            _ ->
+                                False
+                in
                 Element.el
                     [ Element.width Element.fill
                     , Background.color Colors.light
@@ -164,13 +234,16 @@ view model =
                         , Element.centerX
                         , Element.spacing 50
                         ]
-                        [ viewProductList { allProducts = products, selectedProducts = selectedProducts }
-                        , viewMap
-                            { searchString = searchString
-                            , mapboxApiKey = mapboxApiKey
+                        [ viewProductList
+                            { allProducts = wd.products
+                            , selectedProducts = wd.selectedProducts
                             }
-                            features
-                        , viewSummary selectedProducts
+                        , viewMap
+                            { searchString = wd.searchString
+                            , mapboxApiKey = wd.mapboxApiKey
+                            }
+                            wd.features
+                        , viewSummary wd.selectedProducts wd.orderStatus
                         ]
         ]
 
@@ -430,40 +503,90 @@ viewFeature ({ placeName, location } as feature) =
 -- SUMMARY
 
 
-viewSummary : List Product -> Element Msg
-viewSummary products =
-    if List.isEmpty products then
-        Element.none
+viewSummary : List Product -> Maybe OrderStatus -> Element Msg
+viewSummary products maybeOrderStatus =
+    let
+        isSuccess =
+            case maybeOrderStatus of
+                Just Success ->
+                    True
+
+                _ ->
+                    False
+
+        boxStyles =
+            [ Element.width Element.fill
+            , Element.padding 20
+            , Border.rounded 10
+            , Font.color <| Element.rgb 1 1 1
+            ]
+
+        buttonStyles =
+            [ Element.alignRight
+            , Element.height Element.fill
+            , Element.paddingXY 40 20
+            , Element.mouseOver [ Background.color Colors.light ]
+            , Background.color <| Element.rgb 1 1 1
+            , Border.rounded 10
+            , Font.center
+            , Font.size 18
+            , Font.bold
+            ]
+    in
+    if isSuccess then
+        Element.row (Background.color Colors.success :: boxStyles) <|
+            [ Element.el [ Font.bold, Font.size 18 ] <| Element.text "Pedido enviado com sucesso"
+            , Input.button
+                (Font.color Colors.success :: buttonStyles)
+                { onPress = Just ClickedNewOrder
+                , label = Element.text "Fazer outro pedido"
+                }
+            ]
 
     else
-        Element.row
-            [ Element.width Element.fill
-            , Background.color Colors.primary
-            , Element.padding 20
-            , Font.color <| Element.rgb 1 1 1
-            , Border.rounded 10
-            ]
-            [ Element.column [ Element.width Element.fill, Element.spacing 10 ]
-                [ Element.paragraph []
-                    [ Element.el [ Font.bold, Font.size 16 ] <| Element.text <| String.fromInt <| List.length products
-                    , Element.el [ Font.size 11 ] <| Element.text " PEDIDOS SELECIONADOS"
+        let
+            isLoading =
+                case maybeOrderStatus of
+                    Just Sending ->
+                        True
+
+                    _ ->
+                        False
+        in
+        Element.column [ Element.width Element.fill, Element.spacing 10 ]
+            [ Element.row
+                (Background.color Colors.primary :: boxStyles)
+                [ Element.column [ Element.width Element.fill, Element.spacing 10 ]
+                    [ Element.paragraph []
+                        [ Element.el [ Font.bold, Font.size 16 ] <| Element.text <| String.fromInt <| List.length products
+                        , Element.el [ Font.size 11 ] <| Element.text " PEDIDOS SELECIONADOS"
+                        ]
+                    , Element.paragraph [ Font.size 18 ]
+                        [ Element.el [ Font.bold ] <| Element.text <| Product.formatPrice <| List.sum <| List.map .price products
+                        , Element.el [] <| Element.text " VALOR TOTAL"
+                        ]
                     ]
-                , Element.paragraph [ Font.size 18 ]
-                    [ Element.el [ Font.bold ] <| Element.text <| Product.formatPrice <| List.sum <| List.map .price products
-                    , Element.el [] <| Element.text " VALOR TOTAL"
-                    ]
+                , Input.button
+                    (Font.color Colors.primary :: buttonStyles)
+                    { onPress =
+                        if isLoading then
+                            Nothing
+
+                        else
+                            Just ClickedSendOrder
+                    , label =
+                        if isLoading then
+                            Element.text "ENVIANDO"
+
+                        else
+                            Element.text "FAZER PEDIDO"
+                    }
                 ]
-            , Input.button
-                [ Element.alignRight
-                , Element.height Element.fill
-                , Element.paddingXY 40 20
-                , Element.mouseOver [ Background.color Colors.light ]
-                , Background.color <| Element.rgb 1 1 1
-                , Border.rounded 10
-                , Font.color Colors.primary
-                , Font.center
-                , Font.size 18
-                , Font.bold
-                ]
-                { onPress = Nothing, label = Element.text "FAZER PEDIDO" }
+            , case maybeOrderStatus of
+                Just (Error err) ->
+                    Element.el [ Font.color Colors.primary, Element.paddingXY 20 0 ] <|
+                        Element.text err
+
+                _ ->
+                    Element.none
             ]

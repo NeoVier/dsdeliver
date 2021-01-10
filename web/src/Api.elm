@@ -1,8 +1,10 @@
-module Api exposing (Feature, fetchMapbox, fetchProducts)
+module Api exposing (Feature, fetchMapbox, fetchProducts, postOrder)
 
 import Http
 import Json.Decode as Decode exposing (Decoder)
+import Json.Encode as Encode exposing (Value)
 import LngLat exposing (LngLat)
+import Model.Order exposing (Order)
 import Model.Product as Product exposing (Product)
 
 
@@ -19,6 +21,15 @@ fetchProducts toMsg =
         }
 
 
+postOrder : Order -> (Result Http.Error () -> msg) -> Cmd msg
+postOrder order toMsg =
+    Http.post
+        { url = endpointUrl Orders
+        , body = Http.jsonBody <| encodeOrder order
+        , expect = Http.expectWhatever toMsg
+        }
+
+
 
 -- INTERNAL
 
@@ -30,11 +41,11 @@ type ApiEndpoint
 
 endpointUrl : ApiEndpoint -> String
 endpointUrl endpoint =
-    String.join "/" (apiUrl :: endPointParts endpoint)
+    String.join "/" (apiUrl :: endpointParts endpoint)
 
 
-endPointParts : ApiEndpoint -> List String
-endPointParts endpoint =
+endpointParts : ApiEndpoint -> List String
+endpointParts endpoint =
     case endpoint of
         Products ->
             [ "products" ]
@@ -56,6 +67,16 @@ productDecoder =
         (Decode.field "price" Decode.float)
         (Decode.field "imageUri" Decode.string)
         (Decode.field "id" Decode.int)
+
+
+encodeOrder : Order -> Value
+encodeOrder { lngLat, address, productIds } =
+    Encode.object
+        [ ( "address", Encode.string address )
+        , ( "latitude", Encode.float lngLat.lat )
+        , ( "longitude", Encode.float lngLat.lng )
+        , ( "productIds", Encode.list Encode.int productIds )
+        ]
 
 
 

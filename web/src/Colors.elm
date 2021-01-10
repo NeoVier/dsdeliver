@@ -1,4 +1,4 @@
-module Colors exposing (dark, light, primary, primaryHover, secondary)
+module Colors exposing (dark, light, primary, primaryHover, secondary, success)
 
 import Element
 
@@ -26,3 +26,8 @@ secondary =
 light : Element.Color
 light =
     Element.rgb255 0xF5 0xF5 0xF5
+
+
+success : Element.Color
+success =
+    Element.rgb255 0x55 0xB5 0x56
