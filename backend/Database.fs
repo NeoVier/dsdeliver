@@ -10,16 +10,22 @@ let private Host = "localhost"
 let private Database = "dsdeliver"
 
 [<Literal>]
-let private ConnectionString = "Host=" + Host + ";Database=" + Database
+let private DevConnection = "Host=" + Host + ";Database=" + Database
+
+let private connectionString =
+    match System.Environment.GetEnvironmentVariable "DATABASE_URL" with
+    | null -> DevConnection
+    | valid -> valid
+
 
 [<Literal>]
 let private DbProvider = Common.DatabaseProviderTypes.POSTGRESQL
 
-type private Sql = SqlDataProvider<DbProvider, ConnectionString>
+type private Sql = SqlDataProvider<DbProvider, DevConnection>
 
 type ProductEntity = Sql.dataContext.``public.productEntity``
 type OrderEntity = Sql.dataContext.``public.orderEntity``
 
 type Context = Sql.dataContext
 
-let context = Sql.GetDataContext()
+let context = Sql.GetDataContext connectionString
