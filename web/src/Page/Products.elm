@@ -292,11 +292,17 @@ viewProductList { allProducts, selectedProducts } =
 
 viewProductCard : Product -> Bool -> Element Msg
 viewProductCard product isSelected =
-    Input.button []
+    Input.button [ Element.height Element.fill ]
         { onPress = Just <| SelectedProduct product
         , label =
             Element.column
-                [ Background.color <| Element.rgb 1 1 1
+                [ Element.padding 20
+                , Element.spacing 20
+                , Element.mouseOver [ Element.scale 1.01 ]
+                , Element.width <| Element.maximum 300 Element.fill
+                , Element.height Element.fill
+                , Element.htmlAttribute <| Attr.class "product-card"
+                , Background.color <| Element.rgb 1 1 1
                 , Border.rounded 10
                 , Border.color <|
                     if isSelected then
@@ -305,14 +311,8 @@ viewProductCard product isSelected =
                     else
                         Element.rgba 0 0 0 0
                 , Border.width 3
-                , Element.padding 20
-                , Element.spacing 20
                 , Border.shadow { offset = ( 0, 4 ), size = 0, blur = 20, color = Element.rgba 0 0 0 0.25 }
                 , Font.color Colors.secondary
-                , Element.mouseOver [ Element.scale 1.01 ]
-                , Element.width <| Element.maximum 300 Element.fill
-                , Element.height Element.fill
-                , Element.htmlAttribute <| Attr.class "product-card"
                 ]
                 [ Element.el
                     [ Font.center
