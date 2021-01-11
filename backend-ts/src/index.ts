@@ -5,16 +5,16 @@ import express from "express";
 import path from "path";
 import "reflect-metadata";
 import { createConnection } from "typeorm";
+import { __prod__ } from "./constants";
 import { Order } from "./entities/order";
 import { Product } from "./entities/product";
 
 const main = async () => {
   const conn = await createConnection({
     type: "postgres",
-    // url: process.env.DATABASE_URL,
-    database: "dsdeliver2",
+    url: process.env.DATABASE_URL,
     logging: true,
-    synchronize: true,
+    synchronize: !__prod__,
     migrations: [path.join(__dirname, "./migrations/*")],
     entities: [Order, Product],
   });
