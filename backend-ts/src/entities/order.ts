@@ -1,4 +1,5 @@
 import {
+  AfterLoad,
   Column,
   CreateDateColumn,
   Entity,
@@ -35,4 +36,14 @@ export class Order {
   })
   @JoinTable()
   products: Product[];
+
+  total: number;
+
+  @AfterLoad()
+  setTotal() {
+    this.total = this.products.reduce(
+      (acc, currProduct) => acc + currProduct.price,
+      0
+    );
+  }
 }
