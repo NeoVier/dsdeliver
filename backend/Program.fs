@@ -9,7 +9,6 @@ open Microsoft.Extensions.Logging
 open Microsoft.Extensions.DependencyInjection
 open Giraffe
 open Backend.HttpHandlers
-open FSharp.Data.LiteralProviders
 
 
 // ---------------------------------
@@ -47,7 +46,7 @@ let configureCors (builder: CorsPolicyBuilder) =
     builder
         .WithOrigins("http://localhost:5000",
                      "https://localhost:5001",
-                     match System.Environment.GetEnvironmentVariable "WebCORS" with
+                     match System.Environment.GetEnvironmentVariable "CORS_ORIGIN" with
                      | null -> "http://localhost:1234"
                      | valid -> valid)
         .AllowAnyMethod()
@@ -76,8 +75,6 @@ let configureLogging (builder: ILoggingBuilder) =
 
 [<EntryPoint>]
 let main args =
-    printfn $"{Env.BACKEND_URL.Value}"
-
     Host
         .CreateDefaultBuilder(args)
         .ConfigureWebHostDefaults(fun webHostBuilder ->
