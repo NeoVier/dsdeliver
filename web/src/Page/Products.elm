@@ -4,6 +4,7 @@ module Page.Products exposing (Model, Msg, init, update, view)
 
 import Api
 import Colors
+import Component.Spinner as Spinner
 import Element exposing (Element)
 import Element.Background as Background
 import Element.Border as Border
@@ -200,30 +201,31 @@ view : Model -> Element Msg
 view model =
     Element.column [ Element.width Element.fill, Element.height Element.fill ]
         [ viewHeader
-        , case model of
-            -- Loading _ ->
-            Loading ->
-                Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Loading"
+        , Element.el
+            [ Element.width Element.fill
+            , Element.height Element.fill
+            , Element.paddingXY 100 50
+            , Background.color Colors.light
+            ]
+          <|
+            case model of
+                Loading ->
+                    Spinner.dots [ Element.centerX, Element.paddingXY 0 100 ]
+                        { radius = 20, color = "#da5c5c" }
 
-            WithError ->
-                Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Something went wrong"
+                WithError ->
+                    Element.el [ Element.centerX, Element.paddingXY 0 100 ] <| Element.text "Something went wrong"
 
-            WithData wd ->
-                let
-                    isSent =
-                        case wd.orderStatus of
-                            Just Success ->
-                                True
+                WithData wd ->
+                    let
+                        isSent =
+                            case wd.orderStatus of
+                                Just Success ->
+                                    True
 
-                            _ ->
-                                False
-                in
-                Element.el
-                    [ Element.width Element.fill
-                    , Background.color Colors.light
-                    , Element.paddingXY 100 50
-                    ]
-                <|
+                                _ ->
+                                    False
+                    in
                     Element.column
                         [ Element.width <| Element.maximum 1200 Element.fill
                         , Element.centerX
@@ -528,7 +530,7 @@ viewSummary products maybeOrderStatus =
             , Input.button
                 (Font.color Colors.success :: buttonStyles)
                 { onPress = Just ClickedNewOrder
-                , label = Element.text "Fazer outro pedido"
+                , label = Element.text "FAZER OUTRO PEDIDO"
                 }
             ]
 
@@ -565,7 +567,8 @@ viewSummary products maybeOrderStatus =
                             Just ClickedSendOrder
                     , label =
                         if isLoading then
-                            Element.text "ENVIANDO"
+                            Spinner.dots [ Element.centerX, Element.paddingXY 15 0 ]
+                                { radius = 9, color = "#da5c5c" }
 
                         else
                             Element.text "FAZER PEDIDO"
