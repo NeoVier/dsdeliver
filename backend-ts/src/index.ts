@@ -35,6 +35,10 @@ const main = async () => {
     req.send(products);
   });
 
+  app.get("/orders", async (_res, req) => {
+    const orders = await conn.manager.find(Order, { relations: ["products"] });
+    req.send(orders);
+  });
   // populateDb(conn);
 
   // const order = await conn.manager.findOne(Order, { relations: ["products"] });
