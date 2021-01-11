@@ -69,8 +69,6 @@ const main = async () => {
     res.send("Ok");
   });
 
-  // populateDb(conn);
-
   app.listen(parseInt(process.env.PORT), () => {
     console.log(`server started on localhost:${process.env.PORT}`);
   });
