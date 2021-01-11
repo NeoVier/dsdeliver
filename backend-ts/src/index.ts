@@ -54,6 +54,14 @@ const main = async () => {
     res.send({ id });
   });
 
+  app.put("/orders/:id/delivered", async (req, res) => {
+    const order = await conn.manager.update(Order, req.params.id, {
+      status: "delivered",
+    });
+    console.log(order);
+    res.send("Ok");
+  });
+
   // populateDb(conn);
 
   app.listen(parseInt(process.env.PORT), () => {
