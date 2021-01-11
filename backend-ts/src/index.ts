@@ -30,15 +30,16 @@ const main = async () => {
     })
   );
 
-  app.get("/", (_res, req) => {
-    req.send("Hi");
+  app.get("/products", async (_res, req) => {
+    const products = await conn.manager.find(Product);
+    req.send(products);
   });
 
   // populateDb(conn);
 
-  const order = await conn.manager.findOne(Order, { relations: ["products"] });
-  console.log("HEllo");
-  console.log(order);
+  // const order = await conn.manager.findOne(Order, { relations: ["products"] });
+  // console.log("HEllo");
+  // console.log(order);
 
   app.listen(parseInt(process.env.PORT), () => {
     console.log(`server started on localhost:${process.env.PORT}`);
