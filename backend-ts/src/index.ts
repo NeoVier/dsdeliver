@@ -1,3 +1,4 @@
+import bodyParser from "body-parser";
 import cors from "cors";
 import "dotenv-safe/config";
 import express from "express";
@@ -30,20 +31,30 @@ const main = async () => {
     })
   );
 
-  app.get("/products", async (_res, req) => {
+  app.use(bodyParser.urlencoded({ extended: false }));
+  app.use(bodyParser.json());
+
+  app.get("/products", async (_req, res) => {
     const products = await conn.manager.find(Product);
-    req.send(products);
+    res.send(products);
   });
 
-  app.get("/orders", async (_res, req) => {
+  app.get("/orders", async (_req, res) => {
     const orders = await conn.manager.find(Order, { relations: ["products"] });
-    req.send(orders);
+    res.send(orders);
   });
-  // populateDb(conn);
 
-  // const order = await conn.manager.findOne(Order, { relations: ["products"] });
-  // console.log("HEllo");
-  // console.log(order);
+  app.post("/orders", async (req, res) => {
+    const products = await conn.manager.findByIds(
+      Product,
+      req.body.products.map((x: any) => x.id)
+    );
+    const order = { ...req.body, products, status: "pending" } as Order;
+    const { id } = await conn.manager.save(Order, order);
+    res.send({ id });
+  });
+
+  // populateDb(conn);
 
   app.listen(parseInt(process.env.PORT), () => {
     console.log(`server started on localhost:${process.env.PORT}`);
