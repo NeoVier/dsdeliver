@@ -6,5 +6,6 @@
   "password": "postgres",
   "database": "lireddit3",
   "entities": ["dist/entities/*.js"],
-  "migrations": ["dist/migrations/*.js"]
+  "migrations": ["dist/migrations/*.js"],
+  "cli": { "migrationsDir": "src/migrations" }
 }
