@@ -1,6 +1,6 @@
-import { Order } from "src/entities/order";
-import { Product } from "src/entities/product";
 import { Connection } from "typeorm";
+import { Order } from "../entities/order";
+import { Product } from "../entities/product";
 
 export const populateDb = (conn: Connection) => {
   const product1 = new Product();
