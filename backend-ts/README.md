@@ -1,15 +1,13 @@
-# LiReddit
+# backend
 
-This is the back-end part of [this tutorial](https://www.youtube.com/watch?v=I6ypD7qv3Z8&t=47107s).
+This is the backend part of the project, and followed what I did in
+[this other project](https://github.com/NeoVier/lireddit-server).
 
 ## Stack Used
 
-This was done with [TypeScript](https://www.typescriptlang.org), and using the same
-stack used in the back-end on the original tutorial:
+This was done with [TypeScript](https://www.typescriptlang.org), and using the
+following libraries/technologies:
 
-- [Apollo](https://www.apollographql.com/)
-- [Redis](https://redis.io)
 - [Express](https://expressjs.com)
-- [Type-Graphql](https://typegraphql.com)
 - [TypeORM](https://typeorm.io)
 - [PostgreSQL](https://postgresql.org)

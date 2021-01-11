@@ -6,6 +6,13 @@ Repository made to follow Semana [DevSuperior](https://www.youtube.com/channel/U
 
 ### Backend
 
-- F#
-- Giraffe
+- TypeScript
+- TypeORM
+- Express
 - PostgreSQL
+
+### Frontend Web
+
+- Elm
+- elm-ui
+- elm-mapbox
