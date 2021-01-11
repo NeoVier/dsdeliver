@@ -2,6 +2,6 @@
     transition: transform 100ms ease-out;
 }
 
-.justify-center {
+.justify-center > div {
     justify-content: center !important;
 }

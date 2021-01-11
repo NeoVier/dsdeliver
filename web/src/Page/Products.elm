@@ -147,7 +147,7 @@ update model msg =
                             , productIds = List.map .id wd.selectedProducts
                             }
                     in
-                    ( model, Api.postOrder order SentOrder )
+                    ( WithData { wd | orderStatus = Just Sending }, Api.postOrder order SentOrder )
 
         ( SentOrder (Ok ()), WithData wd ) ->
             ( WithData { wd | selectedProducts = [], orderStatus = Just Success }, Cmd.none )

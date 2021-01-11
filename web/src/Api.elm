@@ -71,7 +71,11 @@ encodeOrder { lngLat, address, productIds } =
         [ ( "address", Encode.string address )
         , ( "latitude", Encode.float lngLat.lat )
         , ( "longitude", Encode.float lngLat.lng )
-        , ( "productIds", Encode.list Encode.int productIds )
+        , ( "products"
+          , Encode.list
+                (\productId -> Encode.object [ ( "id", Encode.int productId ) ])
+                productIds
+          )
         ]
 
 
