@@ -1,9 +1,23 @@
-import React from "react";
-import { ScrollView, StyleSheet } from "react-native";
+import React, { useEffect, useState } from "react";
+import { Alert, ScrollView, StyleSheet, Text } from "react-native";
+import { TouchableWithoutFeedback } from "react-native-gesture-handler";
+import { fetchOrders } from "../api";
 import Header from "../components/Header";
 import OrderCard from "../components/OrderCard";
+import { Order } from "../models/Order";
 
 const Orders = () => {
+  const [orders, setOrders] = useState<Order[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
+
+  useEffect(() => {
+    setIsLoading(true);
+    fetchOrders()
+      .then((response) => setOrders(response.data))
+      .catch((error) => Alert.alert("Houve um erro ao buscar os pedidos"))
+      .finally(() => setIsLoading(false));
+  }, []);
+
   return (
     <>
       <Header />
@@ -11,11 +25,15 @@ const Orders = () => {
         style={styles.container}
         contentContainerStyle={{ paddingBottom: 30 }}
       >
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
-        <OrderCard />
+        {isLoading ? (
+          <Text>Buscando pedidos... </Text>
+        ) : (
+          orders.map((order) => (
+            <TouchableWithoutFeedback key={order.id}>
+              <OrderCard order={order} />
+            </TouchableWithoutFeedback>
+          ))
+        )}
       </ScrollView>
     </>
   );
@@ -23,7 +41,7 @@ const Orders = () => {
 
 const styles = StyleSheet.create({
   container: {
-    paddingBottom: 100,
+    marginTop: 30,
   },
 });
 
