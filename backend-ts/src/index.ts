@@ -35,19 +35,26 @@ const main = async () => {
   app.use(bodyParser.json());
 
   app.get("/products", async (_req, res) => {
-    const products = await conn.manager.find(Product);
+    const products = await conn.manager.find(Product, {
+      order: { name: "ASC" },
+    });
     res.send(products);
   });
 
   app.get("/orders", async (_req, res) => {
-    const orders = await conn.manager.find(Order, { relations: ["products"] });
+    const orders = await conn.manager.find(Order, {
+      relations: ["products"],
+      where: { status: "pending" },
+      order: { id: "ASC" },
+    });
     res.send(orders);
   });
 
   app.post("/orders", async (req, res) => {
     const products = await conn.manager.findByIds(
       Product,
-      req.body.products.map((x: any) => x.id)
+      req.body.products.map((x: any) => x.id),
+      { order: { name: "ASC" } }
     );
     const order = { ...req.body, products, status: "pending" } as Order;
     const { id } = await conn.manager.save(Order, order);
