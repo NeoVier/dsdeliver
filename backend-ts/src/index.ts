@@ -45,7 +45,7 @@ const main = async () => {
     const orders = await conn.manager.find(Order, {
       relations: ["products"],
       where: { status: "pending" },
-      order: { id: "ASC" },
+      order: { moment: "ASC" },
     });
     res.send(orders);
   });
